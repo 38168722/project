@@ -1,0 +1,161 @@
+{% extends "models.html" %}
+
+<!-- 内容标题 -->
+{% block content-title %}
+    标签管理
+{% endblock %}
+
+<!-- 文章标题 -->
+{% block title %}
+    标签管理
+{% endblock title %}
+
+<!-- 菜单标题 -->
+{% block classManager %}
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+      <a href="/blog/{{ request.session.username }}/manager/?action=category_manager" style="color: black;text-decoration: none">类别管理</a>
+  </div>
+</div>
+
+{% endblock classManager %}
+{% block articleManager %}
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+          <a href="/blog/{{ request.session.username }}/manager/" style="text-decoration: none;color:black;">文章管理</a>
+      </div>
+    </div>
+
+{% endblock articleManager %}
+
+{% block tag %}
+
+     <div class="panel panel-primary">
+      <div class="panel-heading">
+          <a href="/blog/{{ request.session.username }}/manager/?action=tag_manager" style="text-decoration: none;color:white;">标签管理</a>
+      </div>
+    </div>
+
+{% endblock tag %}
+
+
+<!-- js动态 -->
+{% block js %}
+<script type="application/javascript">
+
+
+//添加类别
+$(".add_tag").click(function () {
+    var title = $("#title").val();
+    if ($.cookie("username") == "None") {
+        alert("请先登录");
+        location.href = "/login/";
+        return false
+    }
+
+    if (title.length == 0) {
+        alert("标题不能为空");
+        return false;
+    }
+
+    //添加标签到数据库
+    $.ajax({
+        type: "POST",
+        url: "/blog/jack/manager/",
+        traditional: true,
+        headers: {"X-CSRFToken": $.cookie('csrftoken')},
+        data: {
+            "title": title,
+            "action": "addTag"
+        },
+        success: function (data) {
+            console.log(data);
+            $("#myModal").modal("hide")
+            if (data == "true") {
+                alert("添加成功")
+                location.href="/blog/jack/manager/?action=tag_manager"
+            }
+        }
+    });
+});
+
+//删除类别
+$(".del").click(function () {
+    tagId=$(this).attr("tagid");
+    currentRow=$(this);
+    $.ajax({
+       type: "POST",
+       url: "/blog/jack/manager/",
+       headers:{"X-CSRFToken":$.cookie('csrftoken')},
+       data: {"tagId":tagId,"action":"tag_del"},
+       success: function(data){
+         if(data=="true"){
+            currentRow.parent().parent().remove();
+         }
+    }
+});
+
+
+})
+
+</script>
+
+{% endblock js %}
+
+<!-- 模态框 -->
+{% block motai %}
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title text-center id="myModalLabel">添加标签</h4>
+      </div>
+      <div class="modal-body">
+            <form class="form-horizontal">
+              <div class="form-group">
+                <label for="title" class="col-sm-2 control-label">名称</label>
+                <div class="col-sm-10">
+                  <input type="text" class="form-control" id="title" placeholder="title" name="title">
+                </div>
+              </div>
+            </form>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-primary add_tag">添加</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock motai %}
+
+<!-- 主体内容框 -->
+{% block content %}
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+  添加
+</button>
+
+<table class="table table-striped">
+<thead>
+    <th class="text-center">序号</th>
+    <th class="text-center">名称</th>
+    <th class="text-center">操作</th>
+</thead>
+<tbody>
+{% for tag in tags %}
+<tr class="text-center">
+    <td>{{ forloop.counter }}</td>
+    <td>{{ tag.title }}</td>
+    <td><a href="/blog/jack/manager/?action=tagEditor&tagId={{ tag.id }}"><button class="btn btn-success edit">编辑</button></a>&nbsp;<button class="btn del btn-danger" tagId="{{ tag.id }}">删除</button></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,227 @@
+{% extends "models.html" %}
+
+{% block mt %}
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" name="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">新增教师</h4>
+      </div>
+      <div class="modal-body">
+
+        <!-- 表单编辑开始位置 -->
+        <form class="form-horizontal" id="add" action="/teacher/" method="post">
+            {% csrf_token %}
+          <div class="form-group">
+            <label for="name" class="col-sm-2 control-label">姓名</label>
+            <div class="col-sm-10">
+                {{ form.name }} {{ form.errors.name.0 }}
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="age" class="col-sm-2 control-label">年龄</label>
+            <div class="col-sm-10">
+                {{ form.age }} {{ form.errors.age.0 }}
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="sex" class="col-sm-2 control-label">性别</label>
+            <div class="col-sm-10">
+                {{ form.sex }} {{ form.errors.sex.0 }}
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="tel" class="col-sm-2 control-label">电话</label>
+            <div class="col-sm-10">
+                {{ form.tel }} {{ form.tel.errors.0 }}
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="salary" class="col-sm-2 control-label">薪水</label>
+            <div class="col-sm-10">
+                {{ form.salary }} {{ form.errors.salary.0 }}
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="classes" class="col-sm-2 control-label">班级</label>
+            <div class="col-sm-10">
+                {{ form.class_list }} {{ form.errors.class_list.0 }}
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="course" class="col-sm-2 control-label">教授课程</label>
+            <div class="col-sm-10">
+                {{ form.course_list }} {{ form.errors.course_list.0 }}
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="usertype" class="col-sm-2 control-label">职位</label>
+            <div class="col-sm-10">
+                    {{ form.userType }} {{ form.errors.userType.0 }}
+            </div>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <input type="hidden" name="method" value="teacheradd">
+        <button type="button" class="btn btn-default" name="close" data-dismiss="modal">关闭</button>
+        <button type="submit" class="btn btn-primary" id="addteacher">添加</button>
+      </form>
+      <!-- 表单编辑结束位置 -->
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block css %}
+    <style type="text/css">
+        .sp01{
+            visibility: hidden;
+        }
+    </style>
+{% endblock css %}
+
+
+{% block booklist %}
+      <!-- Button trigger modal -->
+        <button type="button" class="btn btn-primary add" data-toggle="modal" data-target="#myModal">
+          添加
+        </button>
+
+      <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th class="text-center">序号</th>
+                  <th class="text-center">姓名</th>
+                  <th class="text-center">年龄</th>
+                  <th class="text-center">性别</th>
+                  <th class="text-center">电话</th>
+                  <th class="text-center">薪水</th>
+                  <th class="text-center">班级</th>
+                  <th class="text-center">教授课程</th>
+                  <th class="text-center">职位</th>
+                  <th class="text-center">操作</th>
+                </tr>
+              </thead>
+              <tbody class="text-center">
+              {% for t in teacher_list %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ t.name }}</td>
+                    <td>{{ t.age }}</td>
+                    <td>{{ t.sex }}</td>
+                    <td>{{ t.tel }}</td>
+                    <td><span class="sp01 sp02">{{ t.salary}}</span></td>
+                    <td>
+                    <span class="sp01 sp02">
+                        {% for c in t.class_list.all %}
+                            {{ c.name }}
+                        {% endfor %}
+                    </span>
+                    </td>
+                    <td>
+                    <span class="sp01 sp02">
+                        {% for c in t.course_list.all %}
+                            {{ c.name }}
+                        {% endfor %}
+                    </span>
+                    </td>
+                    <td>
+                        <span  class="sp01 sp02">
+                            {{ t.userType.name}}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-success detail_info">详细信息</button>
+                        <a href="/teacher/?method=tedit&tid={{ t.id }}"><button type="button" class="btn btn-info edit">编辑</button></a>
+                        <a href="/teacher/?method=teacherdel&tid={{ t.id }}"><button class="btn btn-danger">删除</button></a>
+                    </td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+<!-- 分页组件 -->
+{#<nav aria-label="Page navigation">#}
+{#  <ul class="pagination">#}
+{#    {% if book_list.has_previous %}#}
+{#        <li class="previous"><a href="/admin/?page={{ book_list.previous_page_number }}" aria-label="Previous">上一页</a></li>#}
+{#    {% else %}#}
+{#        <li class="previous disabled"><a href="#" aria-label="Previous">上一页</a></li>#}
+{#    {% endif %}#}
+{#        {% for num in pageRange %}#}
+{#            {% if num == currentPage %}#}
+{#                <li class="active"><a href="/admin/?page={{ num }}">{{ num }}</a></li>#}
+{#            {% else %}#}
+{#                <li><a href="/admin/?page={{ num }}">{{ num }}</a></li>#}
+{#            {% endif %}#}
+{#        {% endfor %}#}
+{##}
+{#        {% if book_list.has_next %}#}
+{#            <li class="next"><a href="/admin/?page={{ book_list.next_page_number }}" aria-label="Next">下一页</a></li>#}
+{#        {% else %}#}
+{#            <li class="next disabled"><a href="#" aria-label="Next">下一页</a></li>#}
+{#        {% endif %}#}
+{##}
+{##}
+{#  </ul>#}
+{#</nav>#}
+
+{% endblock %}
+
+
+{% block js %}
+<script type="application/javascript">
+    $(".detail_info").click(function () {
+        $(this).parent().siblings().children(".sp02").toggleClass("sp01")
+    })
+
+    $(".add").click(function(){
+        $.ajax({
+        type: "POST",
+        url: "/teacher/",
+        data: "method=ajax_edit",
+        dataType:"json",
+        success: function(data){
+            var class_l=data.classeslist;
+
+            {#清除下拉框选择项#}
+            $("#classes")[0].length=0
+            $("#course")[0].length=0
+            $("#usertype")[0].length=0
+
+            for(var i=0;i<class_l.length;i++){
+                $("<option value="+class_l[i].id+">"+class_l[i].name+"</option>").appendTo("#classes")
+            }
+
+            var course_l=data.courselist;
+            for(var i=0;i<course_l.length;i++){
+                $("<option value="+course_l[i].id+">"+course_l[i].name+"</option>").appendTo("#course")
+            }
+
+            var utlist=data.utlist;
+            for(var i=0;i<utlist.length;i++){
+                $("<option value="+utlist[i].id+">"+utlist[i].name+"</option>").appendTo("#usertype")
+            }
+       }
+    });
+
+        $("#addteacher").click(function () {
+            console.log("hello world")
+            $('#myModal').modal('hide')
+        })
+
+
+    })
+</script>
+{% endblock %}
+
+
+
+

@@ -1,0 +1,68 @@
+{% load my_tags %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <META http-equiv=Content-Type content="text/html; charset=gb2312">
+    <link rel="stylesheet" href="../static/test01.css" type="text/css">
+    <title>Title</title>
+</head>
+<body>
+<p>hello world</p>
+<h1>{{l.0}}</h1>
+<h1>{{l.1}}</h1>
+<h1>{{l.2}}</h1>
+<p>姓名:{{ dic.name }}年龄：{{ dic.age }}</p>
+<p>{{ p_list.0.name }}</p>
+<p>{{ p_list.1.name }}</p>
+<p>{{ p_list.2.name }}</p>
+<p>{{ time|date:"Y-m-d" }}</p>
+<p>切片{{ value|slice:"2:" }}</p>
+<p>文章缩略图 {{ chapter|truncatechars:20 }}</p>
+{{ abc|safe }}
+{% for p in p_list %}
+    <p>{{ p.name }}</p>
+{% endfor %}
+
+<p>编历字典</p>
+{% for key,val in dic.items %}
+    <p>{{ forloop.counter0 }}{{ key }}:{{ val }}</p>
+{% endfor %}
+
+<p>for empty标签</p>
+{% for p in list %}
+<p>{{ p.name }}</p>
+{% empty %}
+    <p>sorry,no person here</p>
+{% endfor %}
+<p>if标签</p>
+{% if num > 10 or num < 0 %}
+    <p>无效</p>
+{% elif num > 80 and num < 100 %}
+    <p>优秀</p>
+{% else %}
+    <p>凑活吧</p>
+{% endif %}
+
+<p>with方法的使用</p>
+{% with total=p_list.0.name %}
+    <p>{{ total }}</p>
+{% endwith %}
+
+<h1>自定义标签的使用</h1>
+{{ num|filter_multi:2 }}
+<h1>传多个参数进去</h1>
+{{ num|filter_multi:"[22,333,44444]" }}
+<h2>简单标签</h2>
+<p>{% simple_tag_multi 2 5 %}</p>
+<p>{% simple_tag_multi num 5 %}</p>
+
+<h2>simple_tag</h2>
+{% if num|filter_multi:30 > 100 %}
+    {{ num|filter_multi:30 }}
+{% endif %}
+<p>显示一个字符串的长度</p>
+{{ chapter|length }}
+<p>显示一个文件的  尺寸</p>
+{{ value|filesizeformat }}
+</body>
+</html>

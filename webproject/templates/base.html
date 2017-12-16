@@ -1,0 +1,68 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <META http-equiv=Content-Type content="text/html; charset=gb2312">
+    <title>基础的模板框架</title>
+    <style>
+        .top{
+            margin-left: 200px;
+            width:960px;
+            height: 200px;
+            background-color: blueviolet;
+        }
+        .content{
+            margin-left: 200px;
+            width: 960px;
+            height: 560px;
+            background-color: yellow;
+        }
+        .buttom{
+            margin-left: 200px;
+            width: 960px;
+            height: 200px;
+            background-color: blue;
+        }
+
+        .left{
+            width:300px;
+            height:560px;
+            background-color: #8a6d3b;
+            float:left;
+        }
+
+        .right{
+            width: 660px;
+            height:560px;
+            background-color:red;
+            float:right;
+        }
+        h1 {
+            display: inline;
+        }
+    </style>
+</head>
+<body>
+<div class="top">
+    {% block top %}
+        <h1>顶部</h1>
+    {% endblock top %}
+</div>
+<div class="content">
+    <div class="left">
+        {% block leftmenu %}
+            <h1>左边栏</h1>
+        {% endblock leftmenu %}
+    </div>
+    <div class="right">
+        {% block rightmenu %}
+            <h1>右边栏</h1>
+        {% endblock rightmenu %}
+    </div>
+</div>
+<div class="buttom">
+    {% block buttom %}
+        <h1>底部内容</h1>
+    {% endblock buttom %}
+</div>
+</body>
+</html>

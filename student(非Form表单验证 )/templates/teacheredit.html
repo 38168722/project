@@ -1,0 +1,94 @@
+{% extends "models.html" %}
+
+{% block title %}
+    教师编辑
+{% endblock title %}
+
+{% block content %}
+<h3 class="text-center text-primary">教师编辑</h3>
+<form class="form-horizontal" id="add" action="/teacher/" method="post">
+{% csrf_token %}
+<div class="form-group">
+<label for="name" class="col-sm-2 control-label">姓名</label>
+<div class="col-sm-10">
+  <input type="text" class="form-control" id="name" name="name" value="{{ teacher_obj.name }}">
+</div>
+</div>
+<div class="form-group">
+<label for="age" class="col-sm-2 control-label">年龄</label>
+<div class="col-sm-10">
+  <input type="number" class="form-control" id="age" name="age" value="{{ teacher_obj.age }}">
+</div>
+</div>
+<div class="form-group">
+<label for="sex" class="col-sm-2 control-label">性别</label>
+<div class="col-sm-10">
+    <input type="text" class="form-control" id="sex" name="sex" value="{{ teacher_obj.sex }}">
+</div>
+</div>
+<div class="form-group">
+<label for="tel" class="col-sm-2 control-label">电话</label>
+<div class="col-sm-10">
+  <input type="number" class="form-control" id="tel" name="tel" value="{{ teacher_obj.tel }}">
+</div>
+</div>
+<div class="form-group">
+<label for="salary" class="col-sm-2 control-label">薪水</label>
+<div class="col-sm-10">
+  <input type="number" class="form-control" id="salary" name="salary" value="{{ teacher_obj.salary }}">
+</div>
+</div>
+<div class="form-group">
+<label for="classes" class="col-sm-2 control-label">班级</label>
+<div class="col-sm-10">
+    <select name="classes" id="classes" class="form-control" multiple size="3">
+        {% for cl in classlist %}
+            {% if cl.id in sel_classlist %}
+                <option selected value="{{ cl.id }}">{{ cl.name }}</option>
+            {% else %}
+                <option value="{{ cl.id }}">{{ cl.name }}</option>
+            {% endif %}
+        {% endfor %}
+    </select>
+</div>
+</div>
+<div class="form-group">
+<label for="course" class="col-sm-2 control-label">教授课程</label>
+<div class="col-sm-10">
+      <select  id="course" class="form-control" multiple name="course" size=3 autocomplete="off">
+          {% for obj in courselist %}
+                {% if obj.id in sel_courselist %}
+                    <option selected value="{{ obj.id }}">{{ obj.name }}</option>
+                {% else %}
+                    <option value="{{ obj.id }}">{{ obj.name }}</option>
+                {% endif %}
+          {% endfor %}
+      </select>
+</div>
+</div>
+<div class="form-group">
+<label for="usertype" class="col-sm-2 control-label">职位</label>
+<div class="col-sm-10">
+      <select  id="usertype" class="form-control" name="usertype" autocomplete="on">
+          {% for ut in utlist %}
+              {% if ut.id in teacher_obj.id %}
+                  <option selected value="{{ ut.id }}">{{ ut.name }}</option>
+                {% else %}
+                  <option value="{{ ut.id }}">{{ ut.name }}</option>
+              {% endif %}
+          {% endfor %}
+      </select>
+</div>
+
+<div class="form-group">
+<div class="col-sm-offset-2 col-sm-6 modal-footer">
+     <input type="hidden" name="method" value="teacherupdate">
+     <input type="hidden" name="tid" value="{{ teacher_obj.id }}">
+    <a href="/teacher/"><button type="button" class="btn btn-default">返回</button></a>
+    <button type="submit" class="btn btn-primary" id="addteacher">更新</button>
+</div>
+</div>
+</div>
+</div>
+</form>
+{% endblock content %}

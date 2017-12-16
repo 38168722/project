@@ -1,0 +1,26 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <META http-equiv=Content-Type content="text/html; charset=gb2312">
+    <title>Title</title>
+    <script type="application/javascript" src="../static/jquery-3.2.1.min.js"></script>
+</head>
+<body>
+    <button>点我</button>
+</body>
+
+<script type="application/javascript">
+        $("button").click(function () {
+            $.ajax({
+               type: "POST",
+               url: "/test/",
+               dataType: "json",
+               traditional:true,
+               data: {'name':"nelsone","person":["张三","李四","王五"]},
+               success: function(msg){
+{#                   console.log(msg.name,msg.price,msg.num.name,msg.num.age)#}
+               }
+            });
+        })
+</script>
+</html>

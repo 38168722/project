@@ -1,0 +1,181 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <META http-equiv=Content-Type content="text/html; charset=gb2312">
+    <title>用户注册</title>
+    <script type="application/javascript" src="/static/jquery-3.2.1.min.js"></script>
+    <script type="application/javascript" src="/static/bootstrap3/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/static/bootstrap3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/bootstrap3/css/bootstrap-theme.min.css">
+    <style type="text/css">
+         #preview,.img,img {
+            width:80px;
+            height:80px;
+        }
+
+        #preview {
+            border:1px solid #000;
+            background-image:url("../blogs/static/avatar/default.png");
+            background-size:80px 80px;
+            cursor: hand;
+        }
+
+    </style>
+</head>
+<body>
+<div class="container" style="margin-top: 100px">
+<form class="form-horizontal col-sm-offset-4">
+    {% csrf_token %}
+    <div class="row">
+        <p class="h3 col-sm-9 text-center">博客园用户注册</p>
+    </div>
+  <div class="form-group">
+    <label for="username" class="col-sm-2 control-label">用户名</label>
+    <div class="col-sm-5">
+        {{ form.username }}
+    </div>
+    <div class="col-sm-5">
+        <div class="username text-danger"></div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="password" class="col-sm-2 control-label">密&nbsp;&nbsp;码</label>
+    <div class="col-sm-5">
+        {{ form.password }}
+    </div>
+      <div class="col-sm-5">
+        <div class="password text-danger"></div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="repassword" class="col-sm-2 control-label">确认密码</label>
+    <div class="col-sm-5">
+        {{ form.repassword }}
+    </div>
+   <div class="col-sm-5">
+        <div class="repassword text-danger"></div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="nickname" class="col-sm-2 control-label">别&nbsp;&nbsp;名</label>
+    <div class="col-sm-5">
+        {{ form.nickname }}
+    </div>
+    <div class="col-sm-5">
+        <div class="nickname text-danger"></div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="telephone" class="col-sm-2 control-label">电话号码</label>
+    <div class="col-sm-5">
+        {{ form.telephone }}
+    </div>
+    <div class="col-sm-5">
+        <div class="telephone text-danger"></div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="avatar" class="col-sm-2 control-label">用户头像</label>
+    <div class="col-sm-5" style="padding-left:0px">
+    　　 <label for="avatar">
+            <img src="/static/avatar/default.png" alt="" class="solid" id="preview">
+        </label> 　　
+        <input type="file" id="avatar" name="avatar" style="display: none;">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+      <button type="button" class="btn btn-default register">注册</button>&nbsp;&nbsp;&nbsp;&nbsp;<button type="reset" class="btn btn-default">重置</button>
+    </div>
+  </div>
+</form>
+<script type="application/javascript" src="/static/jquery.cookie.js"></script>
+<script type="application/javascript">
+
+//图片预览功能开始  方式一
+$("#avatar").change(function () {
+    console.log("OK")
+    var first_file=$(this)[0].files[0];
+    var reader=new FileReader();
+    reader.readAsDataURL(first_file);
+    reader.onload=function () {
+        $("#preview").attr("src",this.result)
+    }
+})
+//图片预览功能结束  方式一
+
+
+{#图片预览功能开始    #}
+{#var _URL = window.URL || window.webkitURL;#}
+{#function preview(file) {#}
+{#    var prevDiv = document.getElementById('preview');#}
+{#    if (file.files && file.files[0]) {#}
+{#        var reader = new FileReader();#}
+{#        reader.onload = function(evt) {#}
+{#            prevDiv.innerHTML = '<img id="imgnode" src="' + evt.target.result + '" />';#}
+{#            console.log(evt.target.result)#}
+{#        }#}
+{#        reader.readAsDataURL(file.files[0]);#}
+{#    } else {#}
+{#        prevDiv.innerHTML = '<div class="img" id="imgnode"  style="filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(sizingMethod=scale,src=\'' + file.value + '\'"></div>';#}
+{#    }#}
+{#}#}
+{#图片预览功能结束    #}
+
+
+function clearError() {
+     $(".password").html("");
+     $(".username").html("");
+     $(".repassword").html("");
+     $(".nickname").html("");
+     $(".telephone").html("");
+}
+
+$(".register").click(function () {
+    var avatar=$("#avatar")[0].files[0];
+    var username=$("#username").val();
+    var password=$("#password").val();
+    var repassword=$("#repassword").val();
+    var nickname=$("#nickname").val();
+    var telephone=$("#telephone").val();
+    var formData=new FormData();
+    formData.append("avatar",avatar);
+    formData.append("username",username);
+    formData.append("password",password);
+    formData.append("nickname",nickname);
+    formData.append("repassword",repassword);
+    formData.append("telephone",telephone);
+    $.ajax({
+       type: "POST",
+       url: "/register/",
+       data: formData,
+       headers:{"X-CSRFToken":$.cookie('csrftoken')},
+       processData:false,
+       contentType:false,
+       success: function(msg){
+             data=JSON.parse(msg)
+         if("true"==msg){
+             window.location.href="/login/"
+         }else{
+             $(".password").html(data.password)
+             $(".username").html(data.username)
+             console.log("密码信息"+data.repassword)
+             $(".repassword").html(data.repassword)
+             $(".nickname").html(data.nickname)
+             $(".telephone").html(data.telephone)
+             setTimeout(clearError,3000)
+         }
+
+       }
+    });
+
+})
+
+
+
+
+</script>
+</div>
+</body>
+</html>

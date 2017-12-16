@@ -1,0 +1,190 @@
+{% extends "models.html" %}
+
+<!-- 内容标题 -->
+{% block content-title %}
+    文章管理
+{% endblock %}
+
+<!-- 文章标题 -->
+{% block title %}
+    文章管理
+{% endblock title %}
+
+<!-- js动态 -->
+{% block js %}
+<script type="application/javascript">
+//文本编辑器
+KindEditor.ready(function(K) {
+        window.editor = K.create('#editor_id',{
+        width : '100%',
+        height:'350px',
+        items:[
+        'source', '|', 'undo', 'redo', '|', 'preview', 'print', 'template', 'code', 'cut', 'copy', 'paste',
+        'plainpaste', 'wordpaste', '|', 'justifyleft', 'justifycenter', 'justifyright',
+        'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
+        'superscript', 'clearhtml', 'quickformat', 'selectall', '|', 'fullscreen', '/',
+        'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
+        'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat', '|', 'image', 'multiimage',
+        'flash', 'media', 'insertfile', 'table', 'hr', 'emoticons', 'baidumap', 'pagebreak',
+        'anchor', 'link', 'unlink', '|', 'about'
+        ],
+        uploadJson:"/uploadFile/",
+        extraFileUploadParams:{
+               csrfmiddlewaretoken:$("[name='csrfmiddlewaretoken']").val(),
+        }
+});
+});
+
+//添加文章
+$(".addarticle").click(function () {
+    var title=$("#title").val();
+    var content=editor.html();
+    var tags=[];
+    $('input[name="tag"]:checked').each(function () {
+        tags.push($(this).val())
+    });
+    console.log("都有啥标签",tags);
+
+    if($.cookie("username")=="None"){
+        alert("请先登录");
+        location.href="/login/";
+        return false
+    }
+
+    if(title.length==0){
+        alert("标题不能为空");
+        return false
+    }else if(content.length<60){
+        alert("文章内容不能为空且不能小于60字");
+        return false
+    }
+    //添加文章到数据库
+    $.ajax({
+       type: "POST",
+       url: "/blog/jack/manager/",
+       traditional:true,
+       headers:{"X-CSRFToken":$.cookie('csrftoken')},
+       data: {"title":title,"content":content,"tag":tags,"category":$("#category").val(),"action":"addArticle"},
+       success: function(data){
+         console.log(data);
+         if(data=="true"){
+             alert("添加成功")
+         }
+         $("#myModal").modal("hide")
+         tags=[]
+       }
+});
+});
+
+//删除文章
+$(".del").click(function () {
+    articleid=$(this).attr("articleid");
+    currentRow=$(this);
+    $.ajax({
+       type: "POST",
+       url: "/blog/jack/manager/",
+       headers:{"X-CSRFToken":$.cookie('csrftoken')},
+       data: {"articleid":articleid,"action":"del"},
+       success: function(data){
+         if(data=="true"){
+            currentRow.parent().parent().remove();
+         }
+    }
+});
+
+
+})
+
+</script>
+
+{% endblock js %}
+
+<!-- 模态框 -->
+{% block motai %}
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title text-center id="myModalLabel">添加文章</h4>
+      </div>
+      <div class="modal-body">
+            <form class="form-horizontal">
+              <div class="form-group">
+                <label for="title" class="col-sm-2 control-label">标题</label>
+                <div class="col-sm-10">
+                  <input type="text" class="form-control" id="title" placeholder="title" name="title">
+                </div>
+              </div>
+              <div class="form-group">
+                    <label for="content" class="col-sm-2 control-label">正文</label>
+                  <div class="col-sm-10">
+                      <textarea id="editor_id" name="content" class="note-editable"></textarea>
+                  </div>
+              </div>
+              <div class="form-group">
+                  <label for="category" class="col-sm-2 control-label">类别</label>
+                   <div class="radio col-sm-10">
+                       {% for category in category_list %}
+                       <label>
+                             <input type="radio" name="category" id="category" value="{{ category.id }}">
+                             {{ category.title }}
+                       </label>
+                       {% endfor %}
+                   </div>
+              </div>
+              <div class="form-group">
+                    <label for="tag" class="col-sm-2 control-label">标签</label>
+                  <div class="col-sm-10">
+                      {% for tag in tag_list %}
+                        <div class="checkbox-inline">
+                          <label>
+                            <input type="checkbox" class="tag" name="tag" value="{{ tag.id }}">
+                                {{ tag.title }}
+                          </label>
+                        </div>
+                      {% endfor %}
+                  </div>
+              </div>
+            </form>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-primary addarticle">添加</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock motai %}
+
+<!-- 主体内容框 -->
+{% block content %}
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+  添加
+</button>
+
+<table class="table table-striped">
+<thead>
+    <th class="text-center">序号</th>
+    <th class="text-center">标题</th>
+    <th class="text-center">类别</th>
+    <th class="text-center">创建时间</th>
+    <th class="text-center">操作</th>
+</thead>
+<tbody>
+{% for article in article_list %}
+<tr class="text-center">
+    <td>{{ forloop.counter }}</td>
+    <td>{{ article.title }}</td>
+    <td>{{ article.category.title }}</td>
+    <td>{{ article.create_time|date:"Y-m-d" }}</td>
+    <td><a href="/blog/jack/manager/?action=articleEditor&articleId={{ article.id }}"><button class="btn btn-success edit">编辑</button></a>&nbsp;<button class="btn del btn-danger" articleid="{{ article.id }}">删除</button></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,73 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <META http-equiv=Content-Type content="text/html; charset=gb2312">
+    <title>Title</title>
+    <script type="application/javascript" src="/static/jquery-3.2.1.min.js"></script>
+    <script type="application/javascript" src="/static/jquery.session.js"></script>
+    <script type="application/javascript" src="/static/bootstrap3/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/static/bootstrap3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/bootstrap3/css/bootstrap-theme.min.css">
+</head>
+<style type="text/css">
+
+    .test1{
+        width: 200px;
+        height: 200px;
+        background-color: red;
+    }
+
+</style>
+<body>
+<div class="d1"></div>
+<div class="d2"></div>
+
+<div class="container">
+<button class="btn">ajax请求</button>
+
+<div class="tvlist"></div>
+</div>
+<script type="application/javascript">
+
+  $(".btn").click(function () {
+        f();
+  });
+
+  function f(){
+          $.ajax({
+                url:'http://www.jxntv.cn/data/jmd-jxtv2.html?callback=list&_=1454376870403',
+                dataType:"jsonp",
+                jsonp: 'callbacks',
+                jsonpCallback:"list"
+           });
+
+       }
+
+  function list(data){
+        console.log(data)
+      for(var i=0;i<data.data.length;i++){
+            $("<p>"+data.data[i]["week"]+"</p>").appendTo(".tvlist");
+          for(var j=0;j<data.data[i]["list"].length;j++){
+              var a="<p><a href="+data.data[i]["list"][j]["link"]+">"+data.data[i]["list"][j]["name"]+"</a></p>";
+              $(".tvlist").append(a)
+          }
+
+      }
+
+  }
+
+var templateFormat = function (str){
+
+		return function(data){
+			var ret = str.replace(/\{([^\}]+)\}/ig, function(i,match){
+				return data[match];
+			})
+			return ret;
+		}
+	}
+undefined
+templateFormat('hello {0} {1}')(['world','!!'])
+
+</script>
+</body>
+</html>

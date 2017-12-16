@@ -1,0 +1,44 @@
+{% extends "models.html" %}
+{% block title %}
+    出版社管理
+{% endblock title %}
+
+{% block content %}
+
+    <h2 class="sub-header"><a href="/addpublish/"><button class="btn-primary btn">添加</button></a></h2>
+    <div class="table-responsive">
+    <table class="table table-striped">
+    <thead>
+    <tr>
+      <th class="text-center">序号</th>
+      <th class="text-center">名称</th>
+      <th class="text-center">地址</th>
+      <th class="text-center">操作</th>
+    </tr>
+    </thead>
+    <tbody class="text-center">
+    {% for publish in publish_list %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ publish.name }}</td>
+        <td>{{ publish.addr }}</td>
+        <td><a href="/editpublish/?pid={{ publish.id }}"><button type="button" class="btn btn-info">编辑 </button></a>&nbsp;&nbsp;
+        <a href="/delpublish/?pid={{ publish.id }}"><button class="btn btn-danger">删除</button></a></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+    </div>
+
+{% endblock content %}
+
+{% block listmenu %}
+
+  <ul class="nav nav-sidebar">
+    <li><a href="/admin/">图书管理 <span class="sr-only">(current)</span></a></li>
+    <li><a href="/authlist/">作者管理</a></li>
+    <li class="active"><a href="/publish/">出版社管理</a></li>
+    <li><a href="/systemuser/">登陆用户管理</a></li>
+  </ul>
+
+{% endblock listmenu %}

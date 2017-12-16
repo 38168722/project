@@ -1,0 +1,32 @@
+{% load staticfiles %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <META http-equiv=Content-Type content="text/html; charset=gb2312">
+    <title>列表显示</title>
+    <link rel="stylesheet" href="{% static "stark/bootstrap.min.css" %}">
+</head>
+<body>
+<h1>列表页面</h1>
+<div class="container">
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            {% for item in head_list %}
+                <td>{{ item }}</td>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+    {% for data in datalist %}
+        <tr>
+        {% for obj in  data %}
+            <td>{{ obj }}</td>
+        {% endfor %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+</body>
+</html>

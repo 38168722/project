@@ -1,0 +1,48 @@
+{% extends "models.html" %}
+{% block title %}
+    作者管理
+{% endblock title %}
+
+{% block content %}
+
+    <h2 class="sub-header"><a href="/addauth/"><button class="btn-primary btn">添加</button></a></h2>
+    <div class="table-responsive">
+    <table class="table table-striped">
+    <thead>
+    <tr>
+      <th class="text-center">序号</th>
+      <th class="text-center">姓名</th>
+      <th class="text-center">年龄</th>
+      <th class="text-center">电话</th>
+      <th class="text-center">地址</th>
+      <th class="text-center">操作</th>
+    </tr>
+    </thead>
+    <tbody class="text-center">
+    {% for auth in auth_list %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ auth.name }}</td>
+        <td>{{ auth.age }}</td>
+        <td>{{ auth.tel }}</td>
+        <td>{{ auth.addr }}</td>
+        <td><a href="/editauth/?authid={{ auth.id }}"><button type="button" class="btn btn-info edit" >编辑</button></a>&nbsp;&nbsp;
+        <a href="/delauth/?authid={{ auth.id }}"><button class="btn btn-danger">删除</button></a></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+    </div>
+
+{% endblock content %}
+
+{% block listmenu %}
+
+  <ul class="nav nav-sidebar">
+    <li><a href="/admin/">图书管理 <span class="sr-only">(current)</span></a></li>
+    <li class="active"><a href="/authlist/">作者管理</a></li>
+    <li><a href="/publish/">出版社管理</a></li>
+    <li><a href="/systemuser/">登陆用户管理</a></li>
+  </ul>
+
+{% endblock listmenu %}

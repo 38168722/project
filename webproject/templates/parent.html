@@ -1,0 +1,56 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <META http-equiv=Content-Type content="text/html; charset=gb2312">
+    <title>{% block title %}Payment{% endblock title %}</title>
+    <style>
+        .main{
+            width: 960px;
+            height: 800px;
+            border: 3px solid red;
+            text-align: center;
+        }
+        .top{
+            width: 960px;
+            height:200px;
+            background-color: blueviolet;
+        }
+        .left{
+            left: 0px;
+            width: 300px;
+            height: 600px;
+            background-color: yellow;
+            float:left;
+        }
+        .right{
+            right: 0px;
+            width: 600px;
+            height: 600px;
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+<div class="main">
+<div class="top">
+    {% block  topwords %}
+        <h1>welcome to my blogs</h1>
+    {% endblock topwords %}
+</div>
+<div class="left">
+    {% block leftmenu %}
+    <ul>
+        <li><a href="/base/06">python6</a></li>
+        <li><a href="/base/07">python7</a></li>
+        <li><a href="/base/08">python8</a></li>
+    </ul>
+    {% endblock leftmenu %}
+</div>
+<div class="right">
+    {% block content %}
+        <h1>班级{{ no }}</h1>
+    {% endblock content%}
+</div>
+</div>
+</body>
+</html>

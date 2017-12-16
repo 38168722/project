@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <META http-equiv=Content-Type content="text/html; charset=gb2312">
+    <title>列表数据</title>
+</head>
+<body>
+<table>
+    <thead>
+        <tr>
+            <td>用户名</td>
+            <td>密码</td>
+            <td>年龄</td>
+        </tr>
+        <tbody>
+            {% for item in li %}
+                <tr>
+                    <td>{{ item.username }}</td>
+                    <td>{{ item.password }}</td>
+                    <td>{{ item.age }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </thead>
+</table>
+</body>
+</html>

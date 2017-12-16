@@ -1,0 +1,58 @@
+{% extends "models.html" %}
+
+{% block content %}
+
+        <!-- 表单编辑开始位置 -->
+    <h3 class="text-center text-primary">编辑课程</h3>
+    <div class="row">
+        <form class="form-horizontal" id="update" action="/course/" method="post">
+            {% csrf_token %}
+          <div class="form-group">
+            <label for="name" class="col-sm-2 control-label">课程名称</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="name" name="name" value="{{ course_obj.name }}">
+            </div>
+          </div>
+        <div class="form-group">
+            <label for="price" class="col-sm-2 control-label">价格</label>
+            <div class="col-sm-10">
+              <input type="number" class="form-control" id="price" name="price" value="{{ course_obj.price }}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="period" class="col-sm-2 control-label">周期</label>
+            <div class="col-sm-10">
+              <input type="number" class="form-control" id="period" name="period" value="{{ course_obj.period }}">
+            </div>
+          </div>
+
+        <div class="modal-footer">
+        <input type="hidden" name="method" value="updatecourse">
+        <a href="/course/"><button type="button" class="btn btn-default">返回</button></a>
+            <input type="hidden" name="cid" value="{{ course_obj.id }}">
+            <input type="hidden" name="method" value="updatecourse">
+        <button type="submit" class="btn btn-primary" id="updatecourse">更新</button>
+      </div>
+      </div>
+      </form>
+    </div>
+      <!-- 表单编辑结束位置 -->
+{% endblock %}
+
+{% block listmenu %}
+
+  <ul class="nav nav-sidebar">
+    <li><a href="/index/">教师管理 <span class="sr-only">(current)</span></a></li>
+    <li><a href="/student/">学生管理</a></li>
+    <li><a href="/userType/">职位管理</a></li>
+    <li><a href="/classes/">班级管理</a></li>
+    <li class="active"><a href="/course/">课程管理</a></li>
+  </ul>
+
+{% endblock listmenu %}
+
+
+
+
+
+

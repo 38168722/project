@@ -1,0 +1,124 @@
+{% extends "models.html" %}
+
+{% block content %}
+
+        <!-- 表单编辑开始位置 -->
+    <h3 class="text-center text-primary">编辑学生</h3>
+    <div class="row">
+        <form class="form-horizontal" id="update" action="/student/" method="post">
+            {% csrf_token %}
+          <div class="form-group">
+            <label for="name" class="col-sm-2 control-label">姓名</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="name" name="name" value="{{ student_obj.name }}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="sex" class="col-sm-2 control-label">性别</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="sex" name="sex" value="{{ student_obj.sex }}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="classes" class="col-sm-2 control-label">班级</label>
+            <div class="col-sm-10">
+                <select name="classes" id="classes" class="form-control">
+                    {% for cls in class_list %}
+                        {% if cls.id == student_obj.classes.id %}
+                            <option selected value="{{ cls.id }}">{{ cls.name }}</option>
+                        {% else %}
+                            <option value="{{ cls.id }}">{{ cls.name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="course" class="col-sm-2 control-label">课程</label>
+            <div class="col-sm-10">
+                  <select  id="course" class="form-control" name="course" >
+                      {% for course in course_list %}
+                        {% if course.id == student_obj.course.id %}
+                            <option selected value="{{ course.id }}">{{ course.name }}</option>
+                        {% else %}
+                            <option value="{{ course.id }}">{{ course.name }}</option>
+                        {% endif %}
+                      {% endfor %}
+                  </select>
+            </div>
+          </div>
+        <div class="modal-footer">
+        <input type="hidden" name="method" value="studentedit">
+        <a href="/student/"><button type="button" class="btn btn-default">返回</button></a>
+            <input type="hidden" name="sid" value="{{ student_obj.id }}">
+            <input type="hidden" name="method" value="updatestudent">
+        <button type="submit" class="btn btn-primary" id="updatestudent">更新</button>
+      </div>
+      </div>
+      </form>
+    </div>
+      <!-- 表单编辑结束位置 -->
+{% endblock %}
+
+{% block listmenu %}
+
+  <ul class="nav nav-sidebar">
+    <li><a href="/index/">教师管理 <span class="sr-only">(current)</span></a></li>
+    <li class="active"><a href="/student/">学生管理</a></li>
+    <li><a href="/publish/">部门管理</a></li>
+    <li><a href="/classes/">班级管理</a></li>
+    <li><a href="/course/">课程管理</a></li>
+  </ul>
+
+{% endblock listmenu %}
+
+
+{% block js %}
+<script type="application/javascript">
+    $(".detail_info").click(function () {
+        $(this).parent().siblings().children(".sp02").toggleClass("sp01")
+    })
+
+    $(".add").click(function(){
+        $.ajax({
+        type: "POST",
+        url: "/student/",
+        data: "method=ajax_edit",
+        dataType:"json",
+        success: function(data){
+            var class_l=data.classeslist;
+
+            {#清除下拉框选择项#}
+            $("#classes")[0].length=0
+            $("#course")[0].length=0
+            $("#usertype")[0].length=0
+
+            for(var i=0;i<class_l.length;i++){
+                $("<option value="+class_l[i].id+">"+class_l[i].name+"</option>").appendTo("#classes")
+            }
+
+            var course_l=data.courselist;
+            for(var i=0;i<course_l.length;i++){
+                $("<option value="+course_l[i].id+">"+course_l[i].name+"</option>").appendTo("#course")
+            }
+
+            var utlist=data.utlist;
+            for(var i=0;i<utlist.length;i++){
+                $("<option value="+utlist[i].id+">"+utlist[i].name+"</option>").appendTo("#usertype")
+            }
+       }
+    });
+
+        $("#addstudent").click(function () {
+            console.log("hello world")
+            $('#myModal').modal('hide')
+        })
+
+
+    })
+</script>
+{% endblock %}
+
+
+
+

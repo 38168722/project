@@ -1,0 +1,105 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <META http-equiv=Content-Type content="text/html; charset=gb2312">
+    <title>ajax测试</title>
+</head>
+<body>
+{#<input type="number" class="num1">+<input type="number" class="num2">=<input type="text" class="result"><button class="equal">等于</button>#}
+{#<p><button class="ajaxtest">测试ajax</button></p>#}
+{##}
+{#<form action="/upload_file/" method="post" enctype="multipart/form-data">#}
+{#    <p><input type="file" name="upload_file_form"></p>#}
+{#    <input type="submit">#}
+{#</form>#}
+{#<p><button class="send">测试csrf</button><span class="error"></span></p>#}
+
+<!--
+<form name="myForm" action="http://www.365mini.com" method="post">
+    <input name="uid" type="hidden" value="1" />
+    <input name="username" type="text" value="张三" />
+    <input name="password" type="text" value="123456" />
+    <select name="grade" id="grade">
+        <option value="1">一年级</option>
+        <option value="2">二年级</option>
+        <option value="3" selected="selected">三年级</option>
+        <option value="4">四年级</option>
+        <option value="5">五年级</option>
+        <option value="6">六年级</option>
+    </select>
+    <input name="sex" type="radio" checked="checked" value="1" />男
+    <input name="sex" type="radio" value="0" />女
+    <input name="hobby" type="checkbox" checked="checked" value="1" />游泳
+    <input name="hobby" type="checkbox" checked="checked" value="2" />跑步
+    <input name="hobby" type="checkbox" value="3" />羽毛球
+    <input name="btn" id="btn" type="button" value="点击" />
+</form>
+-->
+
+<h3>Ajax上传文件</h3>
+
+<p><input type="text" name="username" id="username" placeholder="username"></p>
+<p><input type="file" name="upload_file_ajax" id="upload_file_ajax"></p>
+
+<button id="upload_button">提交</button>
+
+
+
+
+<script type="application/javascript" src="../static/jquery-3.2.1.min.js"></script>
+<script type="application/javascript" src="../static/jquery.cookie.js"></script>
+<script type="application/javascript">
+    $("#upload_button").click(function () {
+        var username=$("#username").val();
+        var upload_file=$("#upload_file_ajax")[0].files[0];
+        var formData=new FormData();
+        formData.append("username",username);
+        formData.append("upload_file_ajax",upload_file);
+
+        $.ajax({
+           type: "POST",
+           url: "/index/",
+           data:formData,
+           contentType:false,
+           processData:false,
+           success: function(msg){
+             alert( "Data Saved: " + msg );
+           }
+        });
+
+    })
+
+</script>
+
+
+{#<script type="application/javascript">#}
+{#    $(".equal").click(function () {#}
+{#       $.ajax({#}
+{#       headers:{"X-CSRFToken":$.cookie('csrftoken')},#}
+{#       type: "GET",#}
+{#       url: "/index/",#}
+{#       data:{num1:$(".num1").val(),num2:$(".num2").val()},#}
+{#       success: function(msg){#}
+{#           $(".result").val(msg)#}
+{#         console.log( "Data Saved: " + msg );#}
+{#       }#}
+{#    });#}
+{#    })#}
+{##}
+{##}
+{#    $(".send").click(function () {#}
+{#       $.ajax({#}
+{#       type: "POST",#}
+{#       url: "/index/",#}
+{#       data:$("input").serialize(),#}
+{#       success: function(msg){#}
+{#         console.log( "Data Saved: " + msg );#}
+{#       }#}
+{#    });#}
+{#    })#}
+{##}
+{##}
+{##}
+{#</script>#}
+</body>
+</html>

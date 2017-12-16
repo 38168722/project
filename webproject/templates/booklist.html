@@ -1,0 +1,148 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <META http-equiv=Content-Type content="text/html; charset=gb2312">
+    <title>图书管理系统</title>
+    <link rel="stylesheet" href="../static/bootstrap3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/bootstrap3/css/bootstrap-theme.css">
+    <script src="../static/jquery-3.2.1.min.js"></script>
+    <script src="../static/bootstrap3/js/bootstrap.min.js"></script>
+    <style>
+
+        .addbook{
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<!-- Button trigger modal -->
+
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">图书添加</h4>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal" action="/update/" method="post">
+            {% csrf_token %}
+          <div class="form-group">
+            <label for="BookName" class="col-sm-2 control-label">书名</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="BookName" placeholder="BookName" name="bookname">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="author" class="col-sm-2 control-label">作者</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="author" placeholder="author" name="author">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="PublishDate" class="col-sm-2 control-label">出版日期</label>
+            <div class="col-sm-10">
+              <input type="date" class="form-control" id="PublishDate" placeholder="PublishDate" name="publishdate">
+            </div>
+          </div>
+        <div class="form-group">
+            <label for="publishprice" class="col-sm-2 control-label">价格</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control price" id="price" placeholder="price" name="price">
+                <input type="hidden" name="method" value="addbook">
+            </div>
+          </div>
+        <div class="form-group">
+            <label for="publish" class="col-sm-2 control-label">出版社</label>
+            <div class="col-sm-10">
+                <select name="publish" id="publish" class="form-control">
+                    {% for foo in publish %}
+                        <option value="{{ foo.id }}">{{ foo.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-primary add">添加</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="container">
+<div class="row">
+    <div class="col-md-9 col-md-offset-2">
+        <button type="button" class="btn btn-primary addbook" data-toggle="modal" data-target="#myModal">添加</button>
+        <table class="table table-striped text-center">
+                <thead>
+                    <tr>
+                        <td>编号</td>
+                        <td>书名</td>
+                        <td>作者</td>
+                        <td>出版日期</td>
+                        <td>价格</td>
+                        <td>操作</td>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for book in booklist %}
+                       <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ book.title }}</td>
+                            <td>{{ book.author }}</td>
+                            <td>{{ book.publishDate|date:"Y-m-d" }}</td>
+                            <td>{{ book.price }}</td>
+                            <td class="button_opr">
+{#                                <a href="/del/{{ book.nid }}"><button class="btn btn-danger delete">删除</button></a>#}
+                                <button class="btn btn-danger delete" value="{{ book.nid }}">删除</button>
+                                <button type="button" class="btn btn-primary edit" data-toggle="modal" data-target="#myModal">编辑</button>
+                            </td>
+                        </tr>
+                {% endfor %}
+                </tbody>
+        </table>
+    </div>
+</div>
+</div>
+<script type="application/javascript">
+    $(".delete").click(function () {
+        var opr=this
+        $.ajax({
+       type: "POST",
+       url: "booklist/",
+       data: {method:"delete",bid:$(this).val()},
+       success: function(data){
+            if(JSON.parse(data)){
+                $(opr).parent().parent().first().remove()
+            }
+       }
+    });
+})
+
+
+$(".add").click(function () {
+    $.ajax({
+       type: "POST",
+       url: "booklist/",
+       data: $("form").serialize(),
+       success: function(data){
+               var tr_obj=$("<tr><td>"+($("tbody").find("tr").length+1)+"</td><td>"+$("#BookName").val()+"</td><td>"+$("#author").val()+"</td><td>"+$("#PublishDate").val()+"</td><td>"+$("#price").val()+"</td></tr>")
+               $(tr_obj).append($(".button_opr").first().clone(true))
+               $(tr_obj).appendTo("tbody")
+               $('#myModal').modal('hide')
+       }
+    });
+})
+
+
+    console.log("序列化form",$("form").serialize())
+</script>
+</body>
+</html>

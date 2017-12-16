@@ -1,0 +1,280 @@
+{% extends "homesite.html" %}
+{% block title %}
+    {{ article.title }}
+{% endblock title %}
+
+{% block content %}
+<div class="row">
+    <div class="h3 text-center">{{ article.title }}</div>
+    <div>{{ article.articledetail.content|safe }}</div>
+    <p></p>
+</div>
+
+<div class="row">
+    <div class="diggit col-md-1 col-md-offset-11">
+        {% if request.session.username %}
+            <p class="diggnum" id="digg_count">{{ article.up_count }}</p>
+        {% else %}
+            <p class="diggnum" id="guest">{{ article.up_count }}</p>
+        {% endif %}
+        {% csrf_token %}
+    </div>
+</div>
+
+
+<!--  用户评论 -->
+<div class="row comment_list">
+    <div class="h5 commentlist"><b>评论列表</b></div>
+</div>
+<!--
+    {% for item in article.comment_set.all %}
+        <p class="text-primary h4 comment_info">{{ item.create_time|date:"Y-m-d h:m" }}&nbsp;{{ item.user.username }}<a href="#summernote" class="pull-right response small" id="response" parentId="{{ item.id }}"  username="{{ item.user.username }}">回复</a></p>
+        <p style="background-color: darkgrey">
+            {% if item.pid_id %}
+                @<a href="">{{ item.pid.user.username }}</a>:&nbsp;&nbsp;&nbsp;{{ item.pid.content }}
+            {% endif %}
+        </p>
+        <p class="comment_content">{{ item.content }}</p>
+        <p class="glyphicon glyphicon-thumbs-up">赞</p>
+        <p><hr></p>
+    {% endfor %}
+-->
+<!--
+<ul class="media-list">
+  <li class="media">
+    <div class="media-left">
+      <a href="#">
+        <img class="media-object" src="..." alt="...">
+      </a>
+    </div>
+    <div class="media-body">
+        <div class="comment_title">
+              <span class="media-heading">1楼 2017-08-20 21:47 张三丰</span>  <span class="pull-right small">回复&nbsp;&nbsp;引用</span>
+        </div>
+        <div class="comment_body small">
+            武sir写的挺好的。之前看网上一些资料，一般都写的很死板，让人难以理解。看了武sir的这篇文章终于搞懂了git的这些命令了~ 转载了 ~
+        </div>
+        <div class="comment_vote">
+            <span class="pull-right small">支持&nbsp;&nbsp;反对</span>
+        </div>
+    </div>
+  </li>
+</ul>
+-->
+<script type="application/javascript">
+
+//展开评论树
+var floop=0;
+function showCommentTree(comment_list){
+    var html="";
+    floop+=1;
+    $.each(comment_list,function(i,comment_dict){
+        var val=comment_dict["content"];
+        var create_time=comment_dict["create_time"].slice(0,10);
+        var parentId=comment_dict["pid_id"];
+        // var comment_str="<div class='comment'><div class='time'><span>"+create_time+"&nbsp;&nbsp;"+comment_dict['user__username']+"</span><a href='#textedit' class='response pull-right small' username="+comment_dict['user__username']+" parentId="+comment_dict['id']+">回复</a></div><div class='content'><span>"+val+"</span></div>";
+        var comment_str='<ul class="media-list">'+
+                            '  <li class="media">'+
+                            '    <div class="media-left">'+
+                            '      <a href="#">'+
+                            '        <img class="media-object" src="http://'+location.host+'/media/'+comment_dict["user__avatar"]+'" alt="用户图片" width="30px" height="30px">'+
+                            '      </a>'+
+                            '    </div>'+
+                            '    <div class="media-body">'+
+                            '        <div class="comment_title">'+
+                            '              <span class="media-heading">'+floop+'楼&nbsp; '+create_time+'&nbsp;'+comment_dict["user__username"]+'</span>  <span class="pull-right small"><a href="#textedit" class="response small" username="'+comment_dict["user__username"]+'" parentId="'+comment_dict["id"]+'">回复</a>&nbsp;&nbsp;引用</span>'+
+                            '        </div>'+
+                            '        <div class="comment_body small">'+
+                            '            '+val+
+                            '        </div>'+
+                            '        <div class="comment_vote">'+
+                            '            <span class="pull-right small">支持&nbsp;&nbsp;反对</span>'+
+                            '        </div>';
+
+        if(comment_dict["children"]){
+            var s=showCommentTree(comment_dict["children"]);
+            comment_str+=s
+        }
+        comment_str+='</div></li></ul>';
+        html+=comment_str;
+    });
+    return html
+}
+
+// 加载文章评论
+$.ajax({
+    url:"/comment/",
+    data:{"articleid":$.cookie("articleid"),"action":"loadcomment"},
+    headers:{"X-CSRFToken":$.cookie('csrftoken')},
+    type:"POST",
+    success:function (data) {
+        // console.log(data);
+        var s=showCommentTree(data);
+        $(".comment_list").append(s);
+    }
+});
+
+
+//实现ajax文章评论只有登录后的用户才能评论
+var loginuser=$.cookie("username");
+console.log("登录用户是什么"+loginuser);
+$(".savecomment").click(function(){
+    if(loginuser=="None"){
+        alert("请先登录");
+        location.href="/login/";
+        return false
+    }
+
+    if(editor.text().length==0){
+        alert("内容不能为空");
+        return false
+    }
+
+    var content;
+    if(parentId){
+        var index=editor.html().indexOf("\n");
+        content=editor.html().slice(index+1)
+    }else{
+        content=editor.html()
+    }
+
+    $.ajax({
+       type: "POST",
+       url: "/comment/",
+       headers:{"X-CSRFToken":$.cookie('csrftoken')},
+       data: {"content":content,"articleid":$.cookie("articleid"),"parentId":parentId},
+       success: function(data){
+         // 取得当前时间
+         var createTime = data.create_time.slice(0,16);
+         $("<p class='text-primary h4 comment_info'>"+createTime+"&nbsp;"+$.cookie("username")+"<a href='#summernote' class='pull-right response small' id='response' parentId='{{ item.id }}'  username=''>回复</a></p><p class='comment_content'>"+content+"</p> <p class='glyphicon glyphicon-thumbs-up'>赞</p><p></p><hr><p></p>").appendTo(".comment_list");
+         // 提交后清除内容
+          editor.html('');
+       }
+    })
+});
+
+//判断是不是子评论
+parentId=null
+
+//若用户未登录则让其登录后再评论
+$("#guest").click(function (){
+    if($.cookie("username")=="None"){
+        alert("请先登录");
+        $.session.set("history_url",window.location.href);
+        location.href="/login/"
+    }
+});
+
+
+//回复用户评论
+$(".comment_list").on("click",".response",function () {
+    parentId=$(this).attr("parentId");
+    editor.appendHtml("@" + $(this).attr("username") + "<br>");//追加内容
+    editor.focus();    //获取光标
+});
+
+//文本编辑器
+KindEditor.ready(function(K) {
+        window.editor = K.create('#editor_id',{
+        width : '100%',
+        height: '300px',
+        items:[
+        'source', '|', 'undo', 'redo', '|', 'preview', 'print','code', 'cut', 'copy', 'paste',
+        'plainpaste', 'wordpaste', '|', 'justifyleft', 'justifycenter', 'justifyright',
+        'justifyfull',  'indent', 'outdent', 'subscript',
+        'superscript', 'clearhtml', 'quickformat', 'selectall', '|', 'fullscreen', '/',
+        'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
+        'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat',
+        'table', 'hr', 'emoticons',
+        'anchor', 'link', 'unlink', '|', 'about'
+        ],
+        uploadJson:"/uploadFile/",
+        extraFileUploadParams:{
+               csrfmiddlewaretoken:$("[name='csrfmiddlewaretoken']").val(),
+        }
+});
+});
+
+
+
+//点赞功能
+$("#digg_count").click(function () {
+    $.ajax({
+       type: "POST",
+       url: "/poll/",
+       data: {"articleid":$.cookie("articleid"),"csrfmiddlewaretoken":$("[name=csrfmiddlewaretoken]").val()},
+       success: function(data){
+           var val=parseInt($("#digg_count").html())+1;
+           if(data=="true"){
+                 $("#digg_count").html(val)
+           }else{
+                 alert("你已经点过赞了。")
+           }
+       }
+    })
+});
+
+
+
+</script>
+
+
+
+<div class="row">
+<div class="col-md-12">
+    <p>昵称:<input type="text" id="tbCommentAuthor" class="author" disabled="disabled" size="50" value="{{ request.session.username }}"></p>
+</div>
+</div>
+
+<div class="row">
+    <a name="textedit"><textarea id="editor_id" name="content" class="note-editable"></textarea></a>
+    <div class="pull-right"><button type="button" class="btn btn-default savecomment">提交评论</button></div>
+</div>
+{% endblock content %}
+{% block css %}
+
+.diggit {
+    width: 46px;
+    height: 52px;
+    text-align: center;
+    cursor: pointer;
+    margin-top: 2px;
+    padding-top: 5px;
+    background: url(/static/upup.gif) no-repeat;
+}
+
+.media-body{
+    padding:8px;
+    border:1px dotted #ccc;
+}
+
+.comment_title{
+    padding-bottom:8px;
+}
+
+.commentlist{
+    padding-bottom:8px;
+    border-bottom:1px solid #ddd;
+}
+
+.comment_vote{
+
+
+}
+
+{% endblock css %}
+
+{% block js %}
+<script type="application/javascript" src="/static/jquery-3.2.1.min.js"></script>
+<script type="application/javascript" src="/static/jquery.cookie.js"></script>
+<script type="application/javascript" src="/static/articledetail.js"></script>
+<script type="application/javascript" src="/static/jquery.session.js"></script>
+
+
+<style type="text/css">
+    .comment{
+        margin-left: 20px;
+    }
+</style>
+{% endblock js %}
+

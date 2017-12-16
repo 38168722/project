@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+
+{% block content %}
+    {% if page_permission.has_add %}
+                <a href="/userinfo/add/">添加</a>
+            {% endif %}
+            <table>
+                    {% for row in data_list %}
+                        <tr>
+                            <td>{{ row.id }}</td>
+                            <td>{{ row.name }}</td>
+                             {% if  page_permission.has_edit %}
+                            <td><a href="#">编辑</a></td>
+                            {% endif %}
+                            {% if  page_permission.has_del %}
+                            <td><a href="#">删除</a></td>
+                            {% endif %}
+                        </tr>
+                {% endfor %}
+
+            </table>
+{% endblock %}

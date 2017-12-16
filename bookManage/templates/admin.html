@@ -1,0 +1,232 @@
+{% extends "models.html" %}
+
+{% block mt %}
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" name="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">图书修改</h4>
+      </div>
+      <div class="modal-body">
+
+        <!-- 表单编辑开始位置 -->
+        <form class="form-horizontal" id="editsave" action="/edit/" method="post">
+          <div class="form-group">
+            <label for="bookname" class="col-sm-2 control-label">书名</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="bookname" name="title">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="publishdate" class="col-sm-2 control-label">发布日期</label>
+            <div class="col-sm-10">
+              <input type="date" class="form-control" id="publishdate" name="publishdate">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="press" class="col-sm-2 control-label">出版社</label>
+            <div class="col-sm-10">
+                <select  id="press" class="form-control" name="publish" autocomplete="off">
+                </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="price" class="col-sm-2 control-label">价格</label>
+            <div class="col-sm-10">
+              <input type="number" class="form-control" id="price" name="price">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="wordnum" class="col-sm-2 control-label">字数</label>
+            <div class="col-sm-10">
+              <input type="number" class="form-control" id="wordnum" name="wordnum">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="readnum" class="col-sm-2 control-label">阅读数</label>
+            <div class="col-sm-10">
+              <input type="number" class="form-control" id="readnum" name="readnum">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="author" class="col-sm-2 control-label">作者</label>
+            <div class="col-sm-10">
+                  <select  id="author" class="form-control" multiple name="authors" autocomplete="off">
+                  </select>
+            </div>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" name="close" data-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-primary" id="edit-save">保存更改</button>
+        <input type="hidden" class="bookid" name="bookid">
+        <input type="hidden" name="method" value="edit_save">
+      </form>
+      <!-- 表单编辑结束位置 -->
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block booklist %}
+      <h2 class="sub-header"><a href="/addbook/?method=addbook"><button class="btn-primary btn">添加</button></a></h2>
+      <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th class="text-center">序号</th>
+                  <th class="text-center">名称</th>
+                  <th class="text-center">发布日期</th>
+                  <th class="text-center">出版社</th>
+                  <th class="text-center">价格</th>
+                  <th class="text-center">字数</th>
+                  <th class="text-center">阅读数</th>
+                  <th class="text-center">作者</th>
+                  <th class="text-center">操作</th>
+                </tr>
+              </thead>
+              <tbody class="text-center">
+              {% for book in book_list %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ book.title }}</td>
+                    <td>{{ book.publishDate|date:"Y-m-d" }}</td>
+                    <td>{{ book.publish.name }}</td>
+                    <td>{{ book.price }}</td>
+                    <td>{{ book.wordNum }}</td>
+                    <td>{{ book.readNum }}</td>
+                    <td>
+                    {% for auth in book.authorlist.all %}
+                            {{auth.name}},
+                    {% endfor %}
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-info edit" data-toggle="modal" data-target="#myModal">编辑 <input type="hidden" value="{{ book.id }}"></button>&nbsp;&nbsp;
+                        <a href="/delbook/?bookid={{ book.id }}"><button class="btn btn-danger">删除</button></a>
+                    </td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+<!-- 分布组件 -->
+<nav aria-label="Page navigation">
+  <ul class="pagination">
+    {% if book_list.has_previous %}
+        <li class="previous"><a href="/admin/?page={{ book_list.previous_page_number }}" aria-label="Previous">上一页</a></li>
+    {% else %}
+        <li class="previous disabled"><a href="#" aria-label="Previous">上一页</a></li>
+    {% endif %}
+        {% for num in pageRange %}
+            {% if num == currentPage %}
+                <li class="active"><a href="/admin/?page={{ num }}">{{ num }}</a></li>
+            {% else %}
+                <li><a href="/admin/?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if book_list.has_next %}
+            <li class="next"><a href="/admin/?page={{ book_list.next_page_number }}" aria-label="Next">下一页</a></li>
+        {% else %}
+            <li class="next disabled"><a href="#" aria-label="Next">下一页</a></li>
+        {% endif %}
+
+
+  </ul>
+</nav>
+
+{% endblock %}
+
+
+{% block js %}
+<script type="application/javascript">
+  {# 编辑框用户状态取值开始 #}
+       $(".edit").click(function () {
+       $("#press")[0].length=0     {# 清除出版社下拉框值 #}
+       $("#author")[0].length=0    {# 清除作者下拉框值 #}
+        bid=$(this).children("input").val()
+        $(".bookid").val(bid)
+        var tds=$(this).parent().siblings()
+        var ids=["#bookname","#publishdate","#publish","#price","#wordnum","#readnum","#author"]
+        var selpress=$(tds[3]).text()               {#用户已选的出版社id#}
+        var selauthor=[]
+        var seltemp=$.trim($(tds[7]).text())
+            seltemp=seltemp.replace(/(\n)+|(\s)+/ig,"")
+            seltemp=seltemp.split(",")
+            for(var i=0;i<seltemp.length;i++){
+                if(seltemp[i]!=""){
+                    selauthor.push(seltemp[i])
+                }
+            }
+            console.log("是些什么长度",selauthor.length,selauthor);
+           for (var i=0;i<ids.length;i++){
+              if(i!=3|i!=7){
+                $(ids[i]).val($(tds).eq(i+1).text().trim())
+              }
+           }
+
+        $.ajax({
+           type: "POST",
+           url: "/edit/",
+           data: "method=edit_ajax",
+           success: function(data){
+               publist=data.publish
+               authlist=data.authlist
+               for(var i=0;i<$(publist).size();i++){
+                   publishid=publist[i].id
+                   publishname=publist[i].name
+                   if (selpress==publishname){
+                        $("<option selected=selected value="+publishid+">"+publishname+"</option>").appendTo("#press")
+                   }else{
+                        $("<option value="+publishid+">"+publishname+"</option>").appendTo("#press")
+                   }
+               }
+
+               for(var z=0;z<$(authlist).size();z++){
+                    authid=authlist[z].id
+                    authname=$.trim(authlist[z].name)
+{#                    console("djname",authname,"已选择",selauthor.toString())#}
+                    if (inArray(authname,selauthor)){
+                          $("<option selected=selected value="+authid+">"+authname+"</option>").appendTo("#author")
+                    }else{
+                          $("<option value="+authid+">"+authname+"</option>").appendTo("#author")
+                    }
+
+               }
+           }
+        });
+      })
+
+  {# 编辑框用户状态取值结束 #}
+
+
+  {# 编辑书籍保存更改开始#}
+
+      $("#edit-save").click(function () {
+           $("#editsave").submit();
+           $('#myModal').modal('hide')
+      })
+
+  {# 编辑书籍保存更改结束#}
+
+  {# 判断是否在数组中#}
+      function inArray(a,str) {
+            for(var i=0;i<str.length;i++){
+                if(a==str[i]){
+                    return true
+                }
+            }
+            return false
+      }
+</script>
+{% endblock %}
+
+
+
+
