@@ -1,0 +1,16 @@
+{% load staticfiles %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <META http-equiv=Content-Type content="text/html; charset=gb2312">
+    <title>添加操作</title>
+    <link rel="stylesheet" href="{% static "stark/bootstrap.min.css"  %}">
+    <link rel="stylesheet" href="{% static "css/stark-form.css" %}">
+</head>
+<body>
+<div class="container">
+    <h1 class="text-center">添加页面</h1>
+    {% include 'stark/form.html' %}
+</div>
+</body>
+</html>
