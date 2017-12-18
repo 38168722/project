@@ -16,8 +16,10 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from stark.service import v1
+from stark import views
 
 urlpatterns = [
     # url(r'^admin/', admin.site.urls),
     url(r'^stark/', v1.site.urls),
+    url(r'^divpage/',views.testPage),
 ]

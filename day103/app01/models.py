@@ -5,7 +5,7 @@ class UserInfo(models.Model):
     name = models.CharField(max_length=32,verbose_name="用户名称")
     email = models.EmailField(verbose_name="邮箱",max_length=32)
     password = models.CharField(verbose_name="密码",max_length=32)
-    role = models.ForeignKey(verbose_name="角色",to="Role",null=True,blank=True)
+    role = models.ForeignKey(verbose_name="角色",to="Role",null=True,blank=True,default=1)
 
     class Meta:
         verbose_name_plural="用户信息表"

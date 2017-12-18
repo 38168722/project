@@ -30,7 +30,12 @@ class Pagenation(object):
         :param per_page_count: 每页显示数据条数
         :param show_pager_count: 最多显示的页码
         """
-        self.current_page=current_page
+        try:
+            self.current_page=int(current_page)
+        except Exception as e:
+            self.current_page=1
+        if self.current_page<=0:
+            self.current_page=1
         self.total_item_count=total_item_count
         self.base_url=base_url
         self.per_page_count=per_page_count
@@ -40,15 +45,16 @@ class Pagenation(object):
             max_pager_num+=1
         self.max_pager_num=max_pager_num
 
-
+    @property
     def start(self):
         return (self.current_page-1)*self.per_page_count
-
+    @property
     def end(self):
         return self.current_page*self.per_page_count
 
     def page_html(self):
         page_list = []
+        page_list.append('<li><a href="%s?page=%s">首页</a><li>'%(self.base_url,1))
         if self.current_page == 1:
             pre = '<li><a href="#">上一页</a><li>'
         else:
@@ -68,7 +74,7 @@ class Pagenation(object):
             else:
                 if self.current_page + half_show_pager_count > self.max_pager_num:
                     page_start = self.max_pager_num - show_pager_count + 1
-                    page_end = self.max_pager_num
+                    page_end = self.max_pager_num+1
                 else:
                     page_start = self.current_page - half_show_pager_count
                     page_end = self.current_page + half_show_pager_count + 1
@@ -84,6 +90,7 @@ class Pagenation(object):
         else:
             next = '<li><a href="%s?page=%s">下一页</a><li>' % (self.base_url, self.current_page + 1)
         page_list.append(next)
+        page_list.append('<li><a href="%s?page=%s">尾页</a><li>'%(self.base_url,self.max_pager_num))
         return mark_safe(''.join(page_list))
 
 
