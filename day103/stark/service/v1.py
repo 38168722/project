@@ -4,6 +4,10 @@ from django.conf.urls import url
 from django.shortcuts import HttpResponse,render,redirect
 from django.utils.safestring import mark_safe
 from django.urls import reverse
+
+from utils.page import Pagenation
+
+
 class StarkConfig(object):
 
     list_display = []
@@ -75,7 +79,7 @@ class StarkConfig(object):
         app_model_name = (self.model_class._meta.app_label,self.model_class._meta.model_name,)
         url_patterns=[
             url(r'^$',self.changelist_view,name="%s_%s_changelist"%app_model_name),
-            url(r'^add/$', self.add_view, name="%s_%s_add"%app_model_name),
+            url(r'^add/$', self.add_view,name="%s_%s_add"%app_model_name),
             url(r'^(\d+)/delete/$',self.delete_view,name="%s_%s_delete"%app_model_name),
             url(r'^(\d+)/change/$',self.change_view,name="%s_%s_change"%app_model_name),
         ]
@@ -112,14 +116,12 @@ class StarkConfig(object):
     def changelist_view(self,request,*args,**kwargs):
         cls_name = self.model_class._meta.model_name
         #处理表头使用yield的方式处理
-
         def head_list():
             for field_name in self.get_list_display():
                 if isinstance(field_name, str):
                     yield self.model_class._meta.get_field(field_name).verbose_name
                 else:
                     yield field_name(self,is_header=True)
-
         # 处理表头使用for循环方式处理
         # head_list=[]
         # for field_name in self.list_display:
@@ -139,13 +141,67 @@ class StarkConfig(object):
         #                     yield getattr(row,field_name)
         #                 else:
         #                     yield field_name(self,row)
-        #
         #     yield inner()
 
 
-        #处理表中的数据
-        data_list = self.model_class.objects.all()
+        #分页处理
+        current_page=int(request.GET.get('page',1))
+        per_page_count=10
+        start=(current_page-1)*per_page_count
+        end=current_page*per_page_count
+        total_item_count=self.model_class.objects.all().count()
+        max_pager_num,b=divmod(total_item_count,per_page_count)
+        if b:
+            max_pager_num+=1
+
+        page_list=[]
+        if current_page==1:
+            pre='<li><a href="#">上一页</a><li>'
+        else:
+            pre = '<li><a href="%s?page=%s">上一页</a><li>'%(self.get_list_url(),current_page-1)
+        page_list.append(pre)
+        show_pager_count=11
+        half_show_pager_count=int(show_pager_count/2)
+        #数据特别少的情况
+        if max_pager_num<show_pager_count:
+            #页码小于11
+            page_start=1
+            page_end=max_pager_num+1
+        else:
+            if current_page<=half_show_pager_count:
+                page_start=1
+                page_end=show_pager_count+1
+            else:
+                if current_page+half_show_pager_count>max_pager_num:
+                    page_start = max_pager_num - show_pager_count+1
+                    page_end = max_pager_num
+                else:
+                    page_start=current_page-half_show_pager_count
+                    page_end=current_page+half_show_pager_count+1
+
+        for i in range(page_start,page_end):
+            if i==current_page:
+                tpl='<li class="active"><a href="%s?page=%s">%s</a></li>'%(self.get_list_url(),i,i)
+            else:
+                tpl='<li><a href="%s?page=%s">%s</a></li>' % (self.get_list_url(), i, i)
+            page_list.append(tpl)
+        if current_page==max_pager_num:
+            next = '<li><a href="#">下一页</a><li>'
+        else:
+            next = '<li><a href="%s?page=%s">下一页</a><li>'%(self.get_list_url(),current_page+1)
+        page_list.append(next)
+        page_html = mark_safe(''.join(page_list))
+
+        #自定义分页类的方法处理分页
+        # 自定义类分页的开始
+        # current_page=int(request.GET.get('page',1))
+        # total_item_count=self.model_class.objects.all().count()
+        # page_obj=Pagenation(current_page,total_item_count,self.get_list_url())
+        # data_list = self.model_class.objects.all()[page_obj.start:page_obj.end]
+        # 自定义类分页的结束
+        data_list = self.model_class.objects.all()[start:end]
         new_data_list=[]
+        # 处理表中的数据
         for row in data_list:
             temp=[]
             for field_name in self.get_list_display():
@@ -155,7 +211,7 @@ class StarkConfig(object):
                     val=field_name(self,row)
                 temp.append(val)
             new_data_list.append(temp)
-        return render(request,"stark/changelist.html",{"datalist":new_data_list,"head_list":head_list(),"add_url":self.get_add_url(),"show_add_btn":self.get_show_add_btn()})
+        return render(request,"stark/changelist.html",{"page_html":page_html,"datalist":new_data_list,"head_list":head_list(),"add_url":self.get_add_url(),"show_add_btn":self.get_show_add_btn()})
 
     def add_view(self,request,*args,**kwargs):
         model_form_class = self.get_model_form_class()
