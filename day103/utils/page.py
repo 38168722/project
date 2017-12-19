@@ -22,7 +22,7 @@ def users(request):
 
 class Pagenation(object):
 
-    def __init__(self,current_page,total_item_count,base_url,per_page_count=10,show_pager_count=11):
+    def __init__(self,current_page,total_item_count,base_url,params,per_page_count=10,show_pager_count=11):
         """
         :param current_page:  当前页
         :param total_item_count: 数据库数据总条数
@@ -40,25 +40,34 @@ class Pagenation(object):
         self.base_url=base_url
         self.per_page_count=per_page_count
         self.show_pager_count=show_pager_count
+        self.params=params
         max_pager_num,b=divmod(total_item_count,per_page_count)
         if b:
             max_pager_num+=1
         self.max_pager_num=max_pager_num
 
+        import copy
+        params=copy.deepcopy(params)
+        params._mutable=True
+        #包含当前列表页面所有搜索条件
+        self.params=params
     @property
     def start(self):
         return (self.current_page-1)*self.per_page_count
+
     @property
     def end(self):
         return self.current_page*self.per_page_count
 
     def page_html(self):
         page_list = []
-        page_list.append('<li><a href="%s?page=%s">首页</a><li>'%(self.base_url,1))
+        self.params["page"]=1
+        page_list.append('<li><a href="%s?%s">首页</a><li>'%(self.base_url,self.params.urlencode()))
         if self.current_page == 1:
             pre = '<li><a href="#">上一页</a><li>'
         else:
-            pre = '<li><a href="%s?page=%s">上一页</a><li>' % (self.base_url, self.current_page - 1)
+            self.params["page"] = self.current_page - 1
+            pre = '<li><a href="%s?%s">上一页</a><li>' % (self.base_url,self.params.urlencode())
         page_list.append(pre)
         show_pager_count = 11
         half_show_pager_count = int(show_pager_count / 2)
@@ -80,17 +89,21 @@ class Pagenation(object):
                     page_end = self.current_page + half_show_pager_count + 1
 
         for i in range(page_start, page_end):
+            self.params['page']=i
             if i == self.current_page:
-                tpl = '<li class="active"><a href="%s?page=%s">%s</a></li>' % (self.base_url, i, i)
+                tpl = '<li class="active"><a href="%s?%s">%s</a></li>' % (self.base_url,self.params.urlencode(),i)
             else:
-                tpl = '<li><a href="%s?page=%s">%s</a></li>' % (self.base_url, i, i)
+                tpl = '<li><a href="%s?%s">%s</a></li>' % (self.base_url,self.params.urlencode(),i)
             page_list.append(tpl)
         if self.current_page == self.max_pager_num:
             next = '<li><a href="#">下一页</a><li>'
         else:
-            next = '<li><a href="%s?page=%s">下一页</a><li>' % (self.base_url, self.current_page + 1)
+            self.params["page"] = self.current_page + 1
+            next = '<li><a href="%s?%s">下一页</a><li>' % (self.base_url,self.params.urlencode())
         page_list.append(next)
-        page_list.append('<li><a href="%s?page=%s">尾页</a><li>'%(self.base_url,self.max_pager_num))
+        #尾页
+        self.params["page"]=self.max_pager_num
+        page_list.append('<li><a href="%s?%s">尾页</a><li>'%(self.base_url,self.params.urlencode()))
         return mark_safe(''.join(page_list))
 
 
