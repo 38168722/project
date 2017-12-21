@@ -9,21 +9,59 @@
 <body>
 <div class="container">
 <h1 class="text-center">列表页面</h1>
-{% if show_add_btn %}
-    <a href="{{ add_url }}" class="btn btn-primary">添加</a>
+<div class="row">
+    <!-- 判断搜索功能是否可用 -->
+     {% if cl.show_search_form %}
+        <div class="col-md-3">
+            <p>
+           <form method="get">
+               <div class="input-group">
+                  <input name="{{ cl.config.search_key }}" type="text" class="form-control" placeholder="请输入搜索条件" value="{{ cl.search_form_val }}">
+                  <span class="input-group-btn">
+                    <button class="btn btn-primary" type="submit">搜索</button>
+                  </span>
+                </div>
+            </form>
+            </p>
+        </div>
+    {% endif %}
+</div>
+
+{% if cl.show_add_btn %}
+    <p><a href="{{ cl.add_url }}" class="btn btn-primary">添加</a></p>
 {% endif %}
+<div class="row">
+    {% if cl.show_actions %}
+    <div class="col-md-3">
+        <p>
+   <form method="post">
+    {% csrf_token %}
+        <div class="input-group">
+        <select name="list_action" id="" class="form-control">
+          {% for item in cl.modify_actions %}
+                <option value="{{ item.name }}">{{ item.text }}</option>
+          {% endfor %}
+        </select>
+            <span class="input-group-btn">
+               <button class="btn btn-primary" type="submit">执行</button>
+            </span>
+    </div>
+        </p>
+    </div>
+    {% endif %}
+</div>
 <table class="table table-bordered">
     <thead>
         <tr>
-            {% for item in head_list %}
+            {% for item in cl.head_list %}
                 <td>{{ item }}</td>
             {% endfor %}
         </tr>
     </thead>
     <tbody>
-    {% for data in datalist %}
+    {% for data in cl.body_list %}
         <tr>
-        {% for obj in  data %}
+        {% for obj in data %}
             <td>{{ obj }}</td>
         {% endfor %}
         </tr>
@@ -33,10 +71,11 @@
 <div class="text-center">
     <nav aria-label="...">
       <ul class="pagination">
-          {{ page_html }}
+          {{ cl.page_obj.page_html }}
       </ul>
     </nav>
 </div>
+</form>
 </div>
 </body>
 </html>

@@ -19,7 +19,7 @@ class UserInfoModelForm(ModelForm):
 
 class UserInfoConfig(v1.StarkConfig):
 
-    list_display = ["id", "name", "email", "role"]
+    list_display = ["id", "name", "email", "role","password"]
 
     model_form_class = UserInfoModelForm
 
@@ -34,9 +34,29 @@ class UserInfoConfig(v1.StarkConfig):
 
     show_add_btn = True
 
+    show_search_form = True
+
     def get_show_add_btn(self):
         #用来判断看session中是否有添加权限
         return self.show_add_btn
+
+    search_fields=["name__contains","email__contains"]
+
+    def multi_del(self,request):
+        pk_list=request.POST.getlist("pk")
+        self.model_class.objects.filter(id__in=pk_list).delete()
+
+    def multi_init(self,request):
+        pk_list=request.POST.getlist("pk")
+       # self.model_class.objects.filter(id__in=pk_list).delete()
+
+    multi_del.short_desc="批量删除"
+    multi_init.short_desc="初始化"
+
+    #设置为True让用户有批量操作权限
+    show_actions = True
+    actions = [multi_del,multi_init]
+
 
 class RoleConfig(v1.StarkConfig):
 
