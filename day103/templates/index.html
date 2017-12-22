@@ -1,0 +1,19 @@
+{% load my_tags %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <META http-equiv=Content-Type content="text/html; charset=gb2312">
+    <title>测试模板标签</title>
+</head>
+<body>
+    <p>{{ num|filter_multi:"[22,33,444]"}}</p>
+{#    <p>{% simple_tag_multi num 5 %}</p>#}
+{#    {% if num|filter_multi:30 > 100 %}#}
+{#        {{ num|filter_multi:30 }}#}
+{#    {% endif %}#}
+    <p>{% simple_tag_multi num 5 %}</p>
+    {% if num|filter_multi:30 > 100 %}
+        {{ num|filter_multi:30 }}
+    {% endif %}
+</body>
+</html>

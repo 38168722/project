@@ -8,13 +8,55 @@ from django.utils.safestring import mark_safe
 from django.urls import reverse
 from utils.page import Pagenation
 
+class FilterOption(object):
+    """
+     该类主要用来封装 com_filter搜索框的字段值
+    """
+    def __init__(self,field_name,multi=False,condition=None,is_choice=False):
+        self.field_name=field_name
+        self.multi=multi
+        self.condition=condition
+        self.is_choice=is_choice
+
+
+    def get_queryset(self,_field):
+        if self.condition:
+            return _field.rel.to.objects.filter(self.condition)
+        return _field.rel.to.objects.all()
+
+    def get_choices(self,_field):
+        return _field.choices
+
+
+class FilterRow(object):
+    """
+      封装数据对象在此主要封装了用户表中角色、部门、性别数据
+    """
+    def __init__(self,option,data,request):
+        self.data=data
+        self.option=option
+        self.request=request
+
+    def __iter__(self):
+        """
+         迭代的输出数据并判断相关字段是单选还是多选。
+        :return:
+        """
+        yield mark_safe('<a href=%s>全部</a>'%("111"))
+        for val in self.data:
+            if self.option.is_choice:
+                pk,text=val
+            else:
+                pk,text=val.pk,str(val)
+            yield mark_safe("<a href='%s'>%s</a>"%(pk,text))
+
 class ChangeList(object):
 
     def __init__(self,config,queryset):
         self.config=config
         self.list_display=config.get_list_display()
         self.model_class=config.model_class
-
+        self.request = config.request
         #分页用
         current_page = config.request.GET.get('page', 1)
         total_item_count =queryset.count()
@@ -29,7 +71,7 @@ class ChangeList(object):
         self.search_form_val = config.request.GET.get(config.search_key,"")
         self.actions = config.get_actions()
         self.show_actions = config.get_show_actions()
-
+        self.comb_filter = config.get_comb_filter()
 
     def modify_actions(self):
         result=[]
@@ -70,6 +112,27 @@ class ChangeList(object):
                     yield val
             yield inner(row)
 
+    def gen_comb_filter(self):
+        """
+         这是一个生成器函数
+         通过类名get到userinfo下相应的对象，将所有数据放入data_list列表后在前端展示出来
+        :return:
+        """
+        from django.db.models import ForeignKey,ManyToManyField
+        for option in self.comb_filter:
+            _field=self.model_class._meta.get_field(option.field_name)
+            if isinstance(_field,ForeignKey):
+                #获取当前字段depart关联的表并获取其所有数据
+                row = FilterRow(option,option.get_queryset(_field),self.request)
+            elif isinstance(_field,ManyToManyField):
+                row = FilterRow(option,option.get_queryset(_field),self.request)
+            else:
+                row = FilterRow(option,option.get_choices(_field),self.request)
+            yield row
+
+
+
+
 class StarkConfig(object):
 
     list_display = []
@@ -102,12 +165,12 @@ class StarkConfig(object):
     def get_show_actions(self):
         return self.show_actions
 
-    #6 组合搜索
-    com_filter=[]
+    #6 组合搜索默认为空，用户配置里写了就以用户配置为主
+    comb_filter=[]
     def get_comb_filter(self):
         result=[]
-        if self.com_filter:
-            result.extend(self.com_filter)
+        if self.comb_filter:
+            result.extend(self.comb_filter)
         return result
 
     def get_model_form_class(self):
@@ -227,7 +290,6 @@ class StarkConfig(object):
             result.extend(self.actions)
         return result
 
-
     @property
     def urls(self):
         return self.get_urls()
@@ -249,18 +311,8 @@ class StarkConfig(object):
 
         queryset=self.model_class.objects.filter(self.get_search_condition())
         cl = ChangeList(self,queryset)
-        #将传过来的参数保存起来
-        # params = QueryDict(mutable=True)
-        # params[self._query_param_key] = request.GET.urlencode()
-        # list_condition = params.urlencode()
+
         return render(request,"stark/changelist.html",{"cl":cl})
-        # return render(request,"stark/changelist.html",
-        #               {"page_html":c1.page_obj.page_html(),
-        #                "datalist":c1.body_list(),"head_list"
-        #                :c1.head_list(),"add_url"
-        #                :self.get_add_url(),
-        #                "list_condition":list_condition,
-        #                "show_add_btn":self.get_show_add_btn()})
 
     def add_view(self,request,*args,**kwargs):
         model_form_class = self.get_model_form_class()

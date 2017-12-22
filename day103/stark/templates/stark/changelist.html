@@ -10,6 +10,18 @@
 <div class="container">
 <h1 class="text-center">列表页面</h1>
 <div class="row">
+    <div class="col-md-12">
+    {% for filter_row in cl.gen_comb_filter %}
+        <p>
+            {% for col in filter_row %}
+                {{ col }}
+            {% endfor %}
+        </p>
+    {% endfor %}
+    </div>
+</div>
+
+<div class="row">
     <!-- 判断搜索功能是否可用 -->
      {% if cl.show_search_form %}
         <div class="col-md-3">
