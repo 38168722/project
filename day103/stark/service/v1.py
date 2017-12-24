@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls import url
 from django.db.models import Q
+import copy
 from django.http import QueryDict
 from django.shortcuts import HttpResponse,render,redirect
 from django.utils.safestring import mark_safe
@@ -38,17 +39,65 @@ class FilterRow(object):
         self.request=request
 
     def __iter__(self):
+        params = copy.deepcopy(self.request.GET)
+        params._mutable = True
+        print("option.field_name==%s"%self.option.field_name)
+        current_id = params.get(self.option.field_name)
+        current_id_list = params.getlist(self.option.field_name) #多选框值的获取
+        """
+        根据有无传[gender,depart,role]等关键字判断全部选项是否有选中。
+        """
+        if self.option.field_name in params:
+            # del params[self.option.field_name]
+            origin_list = params.pop(self.option.field_name)
+            url = "{0}?{1}".format(self.request.path_info, params.urlencode())
+            yield mark_safe('<li><a href=%s>全部</a><li>'%(url))
+            params.setlist(self.option.field_name,origin_list)
+        else:
+            url = "{0}?{1}".format(self.request.path_info, params.urlencode())
+            yield mark_safe('<li class="active"><a href=%s>全部</a><li>'%(url))
         """
          迭代的输出数据并判断相关字段是单选还是多选。
         :return:
         """
-        yield mark_safe('<a href=%s>全部</a>'%("111"))
         for val in self.data:
             if self.option.is_choice:
-                pk,text=val
+                pk,text=str(val[0]),val[1]
             else:
-                pk,text=val.pk,str(val)
-            yield mark_safe("<a href='%s'>%s</a>"%(pk,text))
+                pk,text=str(val.pk),str(val)
+            #当前URL? option.field_name
+            #参数= 当前URL?gender=pk,通过params 与 request.path_info 生成url
+            if not self.option.multi:
+                # 单选
+                params[self.option.field_name]=pk
+                url="{0}?{1}".format(self.request.path_info,params.urlencode())
+                if current_id==pk:
+                    yield mark_safe("<li class='active'><a href='{0}'>{1}</a><li>".format(url,text))
+                else:
+                    yield mark_safe("<li><a href='{0}'>{1}</a></li>".format(url,text))
+            else:
+                # 多选 current_id_list
+                _params = copy.deepcopy(params)
+                print("_params==",_params)
+                id_list = _params.getlist(self.option.field_name)
+                print("id_list==",id_list)
+                if pk in current_id_list:
+                    # 将已选择的多选移除
+                    id_list.remove(pk)
+                    print("移除后的id_list",id_list)
+                    print("_params里有多少数据==",_params)
+                    _params.setlist(self.option.field_name,id_list)
+                    url = "{0}?{1}".format(self.request.path_info, _params.urlencode())
+                    yield mark_safe("<li class='active'><a href='{0}'>{1}</a><li>".format(url,text))
+                else:
+                    from django.http import QueryDict
+
+                    id_list.append(pk)
+                    _params.setlist(self.option.field_name,id_list)
+                    #创建URL
+                    url = "{0}?{1}".format(self.request.path_info, _params.urlencode())
+                    yield mark_safe("<li><a href='{0}'>{1}</a><li>".format(url,text))
+
 
 class ChangeList(object):
 
@@ -129,9 +178,6 @@ class ChangeList(object):
             else:
                 row = FilterRow(option,option.get_choices(_field),self.request)
             yield row
-
-
-
 
 class StarkConfig(object):
 
@@ -309,9 +355,26 @@ class StarkConfig(object):
             if ret:
                 return ret
 
-        queryset=self.model_class.objects.filter(self.get_search_condition())
-        cl = ChangeList(self,queryset)
+        comb_condition = {}
+        option_list = self.get_comb_filter()
+        print("request.GET.keys==",request.GET.keys())
+        for key in request.GET.keys():
+            value_list=request.GET.getlist(key)
+            flag=False
+            for option in option_list:
+                print("option==%s"%option)
+                print("value_list==",value_list)
+                if option.field_name==key:
+                    flag=True
+                    break
+            if flag:
+                # print("comb_condition=",comb_condition["%s__in"%key])
+                # print("value_list==",value_list)
+                comb_condition["%s__in"%key]=value_list
+                print("comb_condition==",comb_condition)
 
+        queryset=self.model_class.objects.filter(self.get_search_condition()).filter(**comb_condition).distinct()
+        cl = ChangeList(self,queryset)
         return render(request,"stark/changelist.html",{"cl":cl})
 
     def add_view(self,request,*args,**kwargs):

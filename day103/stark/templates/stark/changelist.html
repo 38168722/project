@@ -9,14 +9,27 @@
 <body>
 <div class="container">
 <h1 class="text-center">列表页面</h1>
+<style>
+    .pagination{
+        margin: 3px;
+        margin-left: 0px;
+    }
+    .pagination>li>a, .pagination>li>span{
+        margin-right: 10px;
+        margin-bottom:3px;
+    }
+</style>
+
+
 <div class="row">
     <div class="col-md-12">
     {% for filter_row in cl.gen_comb_filter %}
-        <p>
-            {% for col in filter_row %}
-                {{ col }}
-            {% endfor %}
-        </p>
+            <ul class="pagination">
+                {% for col in filter_row %}
+                    {{ col }}
+                {% endfor %}
+            </ul>
+        <br>
     {% endfor %}
     </div>
 </div>
