@@ -1,19 +1,23 @@
-{% load my_tags %}
+{% load staticfiles %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <META http-equiv=Content-Type content="text/html; charset=gb2312">
-    <title>测试模板标签</title>
+    <title>测试页面</title>
+    <script src="{% static "stark/jquery-3.2.1.min.js" %}"></script>
 </head>
 <body>
-    <p>{{ num|filter_multi:"[22,33,444]"}}</p>
-{#    <p>{% simple_tag_multi num 5 %}</p>#}
-{#    {% if num|filter_multi:30 > 100 %}#}
-{#        {{ num|filter_multi:30 }}#}
-{#    {% endif %}#}
-    <p>{% simple_tag_multi num 5 %}</p>
-    {% if num|filter_multi:30 > 100 %}
-        {{ num|filter_multi:30 }}
-    {% endif %}
+
+<h1 id="i1" onclick="popupFunc()">点我点我</h1>
+
+<script>
+    function popupFunc() {
+        window.open("/savedata/", "savedata", "status=1, height:500, width:600, toolbar=0, resizeable=0")
+    }
+
+    function popCallback(text) {
+        document.getElementById("i1").innerHTML=text
+    }
+</script>
 </body>
 </html>

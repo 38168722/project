@@ -1,0 +1,17 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <META http-equiv=Content-Type content="text/html; charset=gb2312">
+    <title>正在关闭</title>
+</head>
+<body>
+<script>
+        //通过json将数据传递过来
+    (function () {
+        var dic={{ jsonresult|safe }};
+        opener.popupCallback(dic);
+        window.close();
+    })()
+</script>
+</body>
+</html>

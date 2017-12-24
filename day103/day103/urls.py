@@ -22,4 +22,6 @@ urlpatterns = [
     # url(r'^admin/', admin.site.urls),
     url(r'^stark/', v1.site.urls),
     url(r'^divpage/',views.testPage),
+    url(r'^test01/',views.test01),
+    url(r'^savedata/',views.savedata),
 ]

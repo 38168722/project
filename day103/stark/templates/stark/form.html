@@ -1,11 +1,15 @@
 <form action="" method="post" class="form-horizontal" novalidate>
         {% csrf_token %}
-        {% for field in form %}
+        {% for dic in form %}
             <div class="col-md-12">
               <div class="form-group">
-                <label for="inputEmail3" class="col-sm-2 control-label">{{ field.label }}</label>
-                <div class="col-sm-10">
-                  {{ field }} {{ field.errors.0 }}
+                <label for="inputEmail3" class="col-sm-2 control-label">{{ dic.item.field.label }}</label>
+                <div class="col-sm-8">
+                    {{ dic.item }}
+                    {% if dic.is_popup %}
+                        <a onclick="popUp('{{ dic.popup_url }}')"><span style="font-size: 20px;">+</span></a>
+                    {% endif %}
+                    {{ dic.item.field.errors.0 }}
                 </div>
               </div>
             </div>
@@ -14,3 +18,16 @@
             <button class="btn btn-primary">提交</button>
         </div>
 </form>
+<script>
+    function popupCallback(dic) {
+        var op = document.createElement("option");
+        op.value=dic.id;
+        op.text=dic.text;
+        op.setAttribute("selected",'selected');
+        document.getElementById(dic.popbackid).appendChild(op);
+    }
+    
+    function popUp(url) {
+        var popupPage = window.open(url, url, "status=1, height:500, width:600, toolbar=0, resizeable=0");
+    }
+</script>

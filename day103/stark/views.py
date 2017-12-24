@@ -1,5 +1,5 @@
 from django.http import QueryDict
-from django.shortcuts import render
+from django.shortcuts import render,HttpResponse
 # Create your views here.
 from django.utils.safestring import mark_safe
 
@@ -30,3 +30,23 @@ def testPage(request):
     # pagehtml="".join(html)
     # print("pagehtml是啥%s类型是啥%s==="%(pagehtml,type(pagehtml)))
     return render(request,"divpage.html",{"pagelist":pagelist[pager_obj.start:pager_obj.end],"data":html})
+
+def test01(request):
+    """
+     popup功能测试
+    :param request:
+    :return:
+    """
+    return render(request,"index.html")
+
+def savedata(request):
+    """
+     popup功能测试，保存数据并跳转
+    :param request:
+    :return:
+    """
+    if request.method=="POST":
+        command=request.POST.get("username")
+        print("command==%s"%command)
+        return render(request,"closeHtml.html",{"command":command})
+    return render(request,"saveData.html")

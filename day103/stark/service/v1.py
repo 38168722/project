@@ -19,7 +19,6 @@ class FilterOption(object):
         self.condition=condition
         self.is_choice=is_choice
 
-
     def get_queryset(self,_field):
         if self.condition:
             return _field.rel.to.objects.filter(self.condition)
@@ -379,16 +378,38 @@ class StarkConfig(object):
 
     def add_view(self,request,*args,**kwargs):
         model_form_class = self.get_model_form_class()
+        _popbackid=request.GET.get("_popbackid")
         if request.method=="GET":
             form = model_form_class()
+            # new_form=[]
+            # # for bfield in form:
+            # #     temp={"is_popup":False,"item":bfield}
+            # #     from django.forms.models import ModelChoiceField
+            # #     if isinstance(bfield.field,ModelChoiceField):
+            # #         related_class_name = bfield.field.queryset.model
+            # #         if related_class_name in site._registry:
+            # #             app_model_name=related_class_name._meta.app_label,related_class_name._meta.model_name
+            # #             base_url=reverse("stark:%s_%s_add"%app_model_name)
+            # #             popurl="%s?_popbackid=%s"%(base_url,bfield.auto_id)      #url分两部分1、打开url让增加操作,2、定义好回传的id
+            # #             temp["is_popup"] = True
+            # #             temp["popup_url"] = popurl
+            # #     new_form.append(temp)
             return render(request,'stark/add_view.html',{"form":form})
         else:
             form = model_form_class(request.POST)
             if form.is_valid():
-                form.save()
-                list_query_str = request.GET.get(self._query_param_key)
-                list_url = "%s?%s" % (self.get_list_url(), list_query_str)
-                return redirect(list_url)
+                #在数据库中创建数据
+                new_obj=form.save()
+                if _popbackid:
+                    #是popup请求
+                    #render一个页面，写自执行函数
+                    result={"id":new_obj.pk,"text":str(new_obj),"popbackid":_popbackid}
+                    import json
+                    return render(request,"stark/popup_reponse.html",{"jsonresult":json.dumps(result,ensure_ascii=False)})
+                else:
+                    list_query_str = request.GET.get(self._query_param_key)
+                    list_url = "%s?%s" % (self.get_list_url(), list_query_str)
+                    return redirect(list_url)
             return render(request, 'stark/add_view.html', {"form": form})
 
     def delete_view(self,request,nid,*args,**kwargs):
