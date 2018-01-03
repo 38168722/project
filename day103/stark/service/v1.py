@@ -13,11 +13,13 @@ class FilterOption(object):
     """
      该类主要用来封装 com_filter搜索框的字段值
     """
-    def __init__(self,field_name,multi=False,condition=None,is_choice=False):
+    def __init__(self,field_name,multi=False,condition=None,is_choice=False,text_func_name=None,val_func_name=None):
         self.field_name=field_name
         self.multi=multi
         self.condition=condition
         self.is_choice=is_choice
+        self.text_func_name=text_func_name
+        self.val_func_name=val_func_name
 
     def get_queryset(self,_field):
         if self.condition:
@@ -26,7 +28,6 @@ class FilterOption(object):
 
     def get_choices(self,_field):
         return _field.choices
-
 
 class FilterRow(object):
     """
@@ -63,7 +64,9 @@ class FilterRow(object):
             if self.option.is_choice:
                 pk,text=str(val[0]),val[1]
             else:
-                pk,text=str(val.pk),str(val)
+                text = self.option.text_func_name(val) if self.option.text_func_name else str(val)
+                pk = str(self.option.val_func_name(val)) if self.option.val_func_name else str(val.pk)
+
             #当前URL? option.field_name
             #参数= 当前URL?gender=pk,通过params 与 request.path_info 生成url
             if not self.option.multi:
@@ -77,26 +80,20 @@ class FilterRow(object):
             else:
                 # 多选 current_id_list
                 _params = copy.deepcopy(params)
-                print("_params==",_params)
                 id_list = _params.getlist(self.option.field_name)
-                print("id_list==",id_list)
                 if pk in current_id_list:
                     # 将已选择的多选移除
                     id_list.remove(pk)
-                    print("移除后的id_list",id_list)
-                    print("_params里有多少数据==",_params)
                     _params.setlist(self.option.field_name,id_list)
                     url = "{0}?{1}".format(self.request.path_info, _params.urlencode())
                     yield mark_safe("<li class='active'><a href='{0}'>{1}</a><li>".format(url,text))
                 else:
                     from django.http import QueryDict
-
                     id_list.append(pk)
                     _params.setlist(self.option.field_name,id_list)
                     #创建URL
                     url = "{0}?{1}".format(self.request.path_info, _params.urlencode())
                     yield mark_safe("<li><a href='{0}'>{1}</a><li>".format(url,text))
-
 
 class ChangeList(object):
 
@@ -119,7 +116,9 @@ class ChangeList(object):
         self.search_form_val = config.request.GET.get(config.search_key,"")
         self.actions = config.get_actions()
         self.show_actions = config.get_show_actions()
+        self.show_comb_filter = config.get_show_comb_filter()
         self.comb_filter = config.get_comb_filter()
+        self.edit_link = config.get_edit_link()
 
     def modify_actions(self):
         result=[]
@@ -157,6 +156,11 @@ class ChangeList(object):
                         val = getattr(obj,field_name)
                     else:
                         val = field_name(self.config,obj)
+                    # 判断,是否field_name在edit_link里面
+                    if field_name in self.edit_link:
+                        # 反向生成URL
+                        # 获取URL的参数
+                        val = self.edit_link_tag(obj.pk,val)
                     yield val
             yield inner(row)
 
@@ -177,6 +181,13 @@ class ChangeList(object):
             else:
                 row = FilterRow(option,option.get_choices(_field),self.request)
             yield row
+
+    def edit_link_tag(self,pk,text):
+
+        query_str= self.request.GET.urlencode()
+        params = QueryDict(mutable=True)
+        params[self.config._query_param_key] = query_str
+        return mark_safe('<a href="%s?%s">%s</a>' % (self.config.get_change_url(pk), params.urlencode(),text,))
 
 class StarkConfig(object):
 
@@ -217,6 +228,11 @@ class StarkConfig(object):
         if self.comb_filter:
             result.extend(self.comb_filter)
         return result
+
+    show_comb_filter=False
+
+    def get_show_comb_filter(self):
+        return self.show_comb_filter
 
     def get_model_form_class(self):
         if self.model_form_class:
@@ -263,10 +279,18 @@ class StarkConfig(object):
         data=[]
         if self.list_display:
             data.extend(self.list_display)
-            data.append(StarkConfig.edit)
+            # data.append(StarkConfig.edit)
             data.append(StarkConfig.delete)
             data.insert(0,StarkConfig.checkbox)
         return data
+
+    edit_link = []
+
+    def get_edit_link(self):
+        result=[]
+        if self.edit_link:
+            result.extend(self.edit_link)
+        return result
 
     def __init__(self,model_class,site):
         self.model_class=model_class
@@ -370,9 +394,10 @@ class StarkConfig(object):
                 # print("comb_condition=",comb_condition["%s__in"%key])
                 # print("value_list==",value_list)
                 comb_condition["%s__in"%key]=value_list
-                print("comb_condition==",comb_condition)
+        print("comb_condition==",comb_condition)
 
         queryset=self.model_class.objects.filter(self.get_search_condition()).filter(**comb_condition).distinct()
+        print("queryset==",queryset)
         cl = ChangeList(self,queryset)
         return render(request,"stark/changelist.html",{"cl":cl})
 

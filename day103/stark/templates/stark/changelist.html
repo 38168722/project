@@ -21,7 +21,7 @@
     }
 </style>
 
-
+{% if cl.show_comb_filter %}
 <div class="row">
     <div class="col-md-12">
     {% for filter_row in cl.gen_comb_filter %}
@@ -34,6 +34,9 @@
     {% endfor %}
     </div>
 </div>
+{% endif %}
+
+
 
 <div class="row">
     <!-- 判断搜索功能是否可用 -->

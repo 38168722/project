@@ -36,7 +36,7 @@ class UserInfoConfig(v1.StarkConfig):
 
     #列出需要显示的字段
     list_display = ['id','name','email',display_gender,display_depart,display_roles]
-
+    
     #在前端页面上列出需要显示的标签搜索字段
     comb_filter =[
         v1.FilterOption("gender",is_choice=True),

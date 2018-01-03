@@ -1,0 +1,75 @@
+{% load staticfiles %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <META http-equiv=Content-Type content="text/html; charset=gb2312">
+    <title>用户列表</title>
+    <link rel="stylesheet" href="{% static "bootstrap3/css/bootstrap.min.css" %}">
+    <style>
+        .pagination>li>a, .pagination>li>span{
+            margin-left: 8px;
+        }
+        .pagination{
+            margin:3px 0;
+        }
+
+    </style>
+</head>
+<body>
+<div class="container">
+<p>
+<nav aria-label="Page navigation">
+  <ul class="pagination">
+    <li>
+     <a href="/index/?roleId=88">全部</a>
+      {% for item in role %}
+            <li><a href="/index/?roleId={{ item.id }}">{{ item.name }}</a></li>
+      {% endfor %}
+    </li>
+  </ul>
+</nav>
+</p>
+<p>
+<nav aria-label="Page navigation">
+  <ul class="pagination">
+        {% if departId == 88 %}
+            <li class="active"><a href="/index/?departId=88">全部</a></li>
+        {% else %}
+            <li><a href="/index/?departId=88">全部</a></li>
+        {% endif %}
+
+      {% for item in depart %}
+          {% if departId == item.id %}
+            <li class="active"><a href="/index/?departId={{ item.id }}">{{ item.name }}</a></li>
+          {% else %}
+            <li><a href="/index/?departId={{ item.id }}">{{ item.name }}</a></li>
+          {% endif %}
+      {% endfor %}
+  </ul>
+</nav>
+</p>
+
+<table class="table table-bordered text-center">
+    <thead>
+        <tr>
+            <th class="text-center">用户名</th>
+            <th class="text-center">密码</th>
+            <th class="text-center">部门</th>
+            <th class="text-center">操作</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for item in userall %}
+        <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.password }}</td>
+            <td>{{ item.department }}</td>
+            <td><a href="http://127.0.0.1:8080/edit/?uid={{ item.id }}">编辑</a></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+</div>
+</body>
+</html>

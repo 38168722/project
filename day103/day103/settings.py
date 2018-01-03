@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'app02.apps.App02Config',
     'app04.apps.App04Config',
     'stark.apps.StarkConfig',
+    'crm.apps.CrmConfig',
 ]
 
 MIDDLEWARE = [

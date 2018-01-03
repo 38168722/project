@@ -1,0 +1,14 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <META http-equiv=Content-Type content="text/html; charset=gb2312">
+    <title>用户编辑</title>
+</head>
+<body>
+<form action="/edit-{{  }}" method="post">
+    {% csrf_token %}
+    {{ user.as_p }}
+    <button>提交</button>
+</form>
+</body>
+</html>
