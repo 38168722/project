@@ -135,16 +135,16 @@ class ChangeList(object):
         """
         用于Action中显示数据的文本和value属性值
         :return: 
+
         """
         result = []
         for func in self.actions:
             temp = {'name':func.__name__,'text':func.short_desc}
             result.append(temp)
         return result
-
     def add_url(self):
         return self.config.get_add_url()
-
+import flask
     def head_list(self):
         """
         构造表头
@@ -495,7 +495,6 @@ class StarkConfig(object):
 
 
 
-        return HttpResponse('修改')
 
     def delete_view(self,request,nid,*args,**kwargs):
         self.model_class.objects.filter(pk=nid).delete()

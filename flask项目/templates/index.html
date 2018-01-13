@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}
+ 首页
+{% endblock title %}
+
+{% block style %}
+    <style>
+        .main ul li{
+            border-bottom:solid 1px;
+            padding: 15px 0;
+        }
+        .main ul{
+            list-style: none;
+        }
+    </style>
+{% endblock style %}
+
+{% block main %}
+<ul>
+{% for question in questions %}
+<li>
+<div class="media">
+  <div class="media-left media-middle">
+    <a href="#">
+      <img class="media-object" src="{{ url_for('static',filename='image/zhiliao.jpg') }}" alt="头像">
+    </a>
+  </div>
+  <div class="media-body">
+    <h4 class="media-heading"><a href="{{ url_for('detail',question_id=question.id) }}">{{ question.title }}</a></h4>
+    <p>{{ question.content }}</p>
+    <div class="text-right">
+        <span>{{ question.author.username }}</span>
+        <span>{{ question.create_time }}</span>
+    </div>
+  </div>
+</div>
+</li>
+{% endfor %}
+</ul>
+    
+    
+{% endblock main %}

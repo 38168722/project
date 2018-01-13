@@ -67,6 +67,7 @@
     {% csrf_token %}
         <div class="input-group">
         <select name="list_action" id="" class="form-control">
+            <option value="">请选择action</option>
           {% for item in cl.modify_actions %}
                 <option value="{{ item.name }}">{{ item.text }}</option>
           {% endfor %}
@@ -74,7 +75,7 @@
             <span class="input-group-btn">
                <button class="btn btn-primary" type="submit">执行</button>
             </span>
-    </div>
+        </div>
         </p>
     </div>
     {% endif %}

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls import url
 from django.db.models import Q
-import copy
+import copy,json
 from django.http import QueryDict
 from django.shortcuts import HttpResponse,render,redirect
 from django.utils.safestring import mark_safe
@@ -352,6 +352,10 @@ class StarkConfig(object):
                 condition.children.append((field_name,key_word))
         return condition
 
+    def default_action(self,request):
+        pass
+
+
     actions=[]
     def get_actions(self):
         result=[]
@@ -394,10 +398,8 @@ class StarkConfig(object):
                 # print("comb_condition=",comb_condition["%s__in"%key])
                 # print("value_list==",value_list)
                 comb_condition["%s__in"%key]=value_list
-        print("comb_condition==",comb_condition)
 
         queryset=self.model_class.objects.filter(self.get_search_condition()).filter(**comb_condition).distinct()
-        print("queryset==",queryset)
         cl = ChangeList(self,queryset)
         return render(request,"stark/changelist.html",{"cl":cl})
 
@@ -406,20 +408,7 @@ class StarkConfig(object):
         _popbackid=request.GET.get("_popbackid")
         if request.method=="GET":
             form = model_form_class()
-            # new_form=[]
-            # # for bfield in form:
-            # #     temp={"is_popup":False,"item":bfield}
-            # #     from django.forms.models import ModelChoiceField
-            # #     if isinstance(bfield.field,ModelChoiceField):
-            # #         related_class_name = bfield.field.queryset.model
-            # #         if related_class_name in site._registry:
-            # #             app_model_name=related_class_name._meta.app_label,related_class_name._meta.model_name
-            # #             base_url=reverse("stark:%s_%s_add"%app_model_name)
-            # #             popurl="%s?_popbackid=%s"%(base_url,bfield.auto_id)      #url分两部分1、打开url让增加操作,2、定义好回传的id
-            # #             temp["is_popup"] = True
-            # #             temp["popup_url"] = popurl
-            # #     new_form.append(temp)
-            return render(request,'stark/add_view.html',{"form":form})
+            return render(request,'stark/add_view.html',{"form":form,"config":self})
         else:
             form = model_form_class(request.POST)
             if form.is_valid():
@@ -428,9 +417,27 @@ class StarkConfig(object):
                 if _popbackid:
                     #是popup请求
                     #render一个页面，写自执行函数
-                    result={"id":new_obj.pk,"text":str(new_obj),"popbackid":_popbackid}
-                    import json
-                    return render(request,"stark/popup_reponse.html",{"jsonresult":json.dumps(result,ensure_ascii=False)})
+                    result = {"status":False,"id":None, "text":None, "popbackid": _popbackid}
+                    model_name=request.GET.get("model_name")
+                    related_name=request.GET.get("related_name")
+                    for related_object in new_obj._meta.related_objects:
+                        _model_name=related_object.field.model._meta.model_name
+                        _related_name=related_object.related_name
+                        if (type(related_object) == ManyToOneRel):
+                            _field_name=related_object.field_name
+                        else:
+                            _field_name = 'pk'
+                        _limit_choices_to = related_object.limit_choices_to
+                        if model_name==_model_name and related_name==str(_related_name):
+                            is_exsits=self.model_class.objects.filter(**_limit_choices_to,pk=new_obj.pk).exists()
+                            if is_exsits:
+                                #如果新创建用户时,销售部的人，页面才增加
+                                #分门别类做判断
+                                result["status"]=True
+                                result["text"]=str(new_obj)
+                                result["id"]=getattr(new_obj,_field_name)
+                                return render(request,"stark/popup_reponse.html",{"jsonresult":json.dumps(result,ensure_ascii=False)})
+                    return render(request, "stark/popup_reponse.html",{"jsonresult": json.dumps(result, ensure_ascii=False)})
                 else:
                     list_query_str = request.GET.get(self._query_param_key)
                     list_url = "%s?%s" % (self.get_list_url(), list_query_str)
@@ -452,15 +459,16 @@ class StarkConfig(object):
         model_form_class = self.get_model_form_class()
         if request.method=="GET":
             form = model_form_class(instance=obj)
+            print("form里都有啥====",form)
             return render(request,'stark/change_view.html',{'form':form})
         else:
             form = model_form_class(instance=obj,data=request.POST)
             if form.is_valid():
                 form.save()
                 list_query_str=request.GET.get(self._query_param_key)
-                list_url="%s?%s"%(self.get_list_url(),list_query_str)
+                list_url="%s?%s"%(self.get_list_url(),list_query_str,)
                 return redirect(list_url)
-            return render(request, 'stark/change_view.html', {'form': form})
+            return render(request,'stark/change_view.html', {'form': form})
 
 class StarkSite(object):
 

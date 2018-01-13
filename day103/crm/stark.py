@@ -104,9 +104,6 @@ class CustomerConfig(v1.StarkConfig):
 
 v1.site.register(models.Customer,CustomerConfig)
 
-
-
-
 class SchoolConfig(v1.StarkConfig):
     list_display = ["title"]
     edit_link = ["title"]
@@ -152,3 +149,41 @@ class ConsultRecordConfig(v1.StarkConfig):
         return super(ConsultRecordConfig,self).changelist_view(request,*args,**kwargs)
 
 v1.site.register(models.ConsultRecord,ConsultRecordConfig)
+
+class CourseRecordConfig(v1.StarkConfig):
+    list_display = ['class_obj','day_num']
+
+    def multi_init(self,request):
+        """
+        自定义执行批量初始化方法
+        :param request:
+        :return:
+        """
+        #上课记录的ID列表
+        pk_list = request.POST.getlist("pk")
+        #上课记录对象
+        record_list=models.CourseRecord.objects.filter(id__in=pk_list)
+        for record in record_list:
+            #day1,day2,day3
+            #record.class_obj #关联的班级
+            student_list=models.Student.objects.filter(class_list=record.class_obj)
+            print(record,student_list)
+            bulk_list=[]
+            for student in student_list:
+                #为每一个学生创建dayn的学习记录
+                # models.StudyRecord.objects.create(student=student,course_record=record)
+                bulk_list.append(models.StudyRecord(student=student,course_record=record))
+            models.StudyRecord.objects.bulk_create(bulk_list)
+
+
+    multi_init.short_desc="学生的初始化"
+
+    actions = [multi_init,]
+    show_actions = True
+
+v1.site.register(models.CourseRecord,CourseRecordConfig)
+
+class StudentConfig(v1.StarkConfig):
+    list_display = ["username","emergency_contract"]
+
+v1.site.register(models.Student,StudentConfig)
