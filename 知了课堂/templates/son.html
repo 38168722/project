@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}
+<p>这是一个字模板</p>
+{% endblock %}
+
+{% block content %}
+{#{{ super() }}#}
+    <p style="background-color: green">我是子模板中的代码</p>
+    <p>父模板的名字是{{ self.title() }}</p>
+{% endblock %}
